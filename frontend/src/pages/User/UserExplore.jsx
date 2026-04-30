@@ -84,26 +84,20 @@ export default function UserExplore({ onOpenRestaurant }) {
     return { lat, lng };
   }, [user?.latitude, user?.longitude]);
 
-  const locationEnabled = Boolean(
-    profileCoords &&
-    gpsCoords.lat != null &&
-    gpsCoords.lng != null
-  );
+  const mapCenter = useMemo(() => {
+    if (gpsCoords.lat != null && gpsCoords.lng != null) return gpsCoords;
+    if (profileCoords) return profileCoords;
+    return { lat: DEFAULT_CENTER.lat, lng: DEFAULT_CENTER.lng };
+  }, [gpsCoords, profileCoords]);
 
   const [viewState, setViewState] = useState({
-    longitude: DEFAULT_CENTER.lng,
-    latitude:  DEFAULT_CENTER.lat,
+    longitude: profileCoords?.lng || DEFAULT_CENTER.lng,
+    latitude:  profileCoords?.lat || DEFAULT_CENTER.lat,
     zoom: 13,
   });
 
   // GPS — getCurrentPosition for immediate fix, watchPosition for live updates
   useEffect(() => {
-    if (!profileCoords) {
-      setGpsCoords({ lat: null, lng: null });
-      setGpsDenied(false);
-      return;
-    }
-
     if (!navigator.geolocation) { setGpsDenied(true); return; }
 
     function applyPos(pos) {
@@ -114,11 +108,26 @@ export default function UserExplore({ onOpenRestaurant }) {
       setViewState((vs) => ({ ...vs, latitude: lat, longitude: lng, zoom: Math.max(vs.zoom, 14) }));
     }
 
+    async function tryIpFallback() {
+      try {
+        const res = await fetch("https://ipapi.co/json/");
+        const data = await res.json();
+        if (data.latitude && data.longitude) {
+          setGpsCoords({ lat: Number(data.latitude), lng: Number(data.longitude) });
+          setViewState((vs) => ({ ...vs, latitude: Number(data.latitude), longitude: Number(data.longitude), zoom: Math.max(vs.zoom, 13) }));
+        }
+      } catch {
+        // IP lookup failed too — stay at default
+      }
+    }
+
     function handleErr(err) {
       if (err.code === 1) {
         setGpsDenied(true); // PERMISSION_DENIED — user blocked it
+      } else {
+        // POSITION_UNAVAILABLE or TIMEOUT (e.g. Mac on hotspot) — try IP fallback
+        tryIpFallback();
       }
-      setGpsCoords({ lat: null, lng: null });
     }
 
     // Fast one-shot to show dot immediately (no waiting for watchPosition's first tick)
@@ -138,7 +147,7 @@ export default function UserExplore({ onOpenRestaurant }) {
     return () => {
       if (watchIdRef.current != null) navigator.geolocation.clearWatch(watchIdRef.current);
     };
-  }, [profileCoords]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Debounce search
   useEffect(() => {
@@ -153,8 +162,8 @@ export default function UserExplore({ onOpenRestaurant }) {
     setError("");
     searchRestaurants(query, filters.cuisines, {
       ...filters,
-      latitude:       locationEnabled ? gpsCoords.lat : null,
-      longitude:      locationEnabled ? gpsCoords.lng : null,
+      latitude:       mapCenter.lat,
+      longitude:      mapCenter.lng,
       distanceRadius: filters.distanceRadius,
       onlyLebanon:    true,
     })
@@ -162,7 +171,7 @@ export default function UserExplore({ onOpenRestaurant }) {
       .catch((err)  => { if (!cancelled) { setRestaurants([]); setError(err.message || "Failed to load results."); } })
       .finally(()   => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [query, filters, gpsCoords.lat, gpsCoords.lng, locationEnabled]);
+  }, [query, filters, mapCenter.lat, mapCenter.lng]);
 
   const restaurantsWithCoords = useMemo(
     () => restaurants.filter((r) => parseCoord(r.latitude) != null && parseCoord(r.longitude) != null),
@@ -258,15 +267,15 @@ export default function UserExplore({ onOpenRestaurant }) {
           aria-label="Search restaurants"
         />
 
-        {/* 📍 Re-center — appears when profile location and browser location are enabled */}
-        {locationEnabled && (
+        {/* 📍 Re-center — appears when GPS fix or profile coords available */}
+        {(gpsCoords.lat != null || profileCoords != null) && (
           <button
             className="exploreLocateBtn is-granted"
             type="button"
             title="Center map on my location"
             onClick={() => {
-              const lat = gpsCoords.lat;
-              const lng = gpsCoords.lng;
+              const lat = gpsCoords.lat ?? profileCoords?.lat;
+              const lng = gpsCoords.lng ?? profileCoords?.lng;
               setViewState((vs) => ({ ...vs, latitude: lat, longitude: lng, zoom: 15 }));
             }}
           >📍</button>
@@ -516,7 +525,7 @@ export default function UserExplore({ onOpenRestaurant }) {
                       <span className="crowdMeter__dot" />
                       <span>{crowd.label}</span>
                     </span>
-                    {locationEnabled && restaurant.distance_km != null && (
+                    {restaurant.distance_km != null && (
                       <span className="exploreListCard__dist">{restaurant.distance_km} km</span>
                     )}
                   </div>
@@ -553,12 +562,15 @@ export default function UserExplore({ onOpenRestaurant }) {
           >
             <NavigationControl position="top-right" />
 
-            {/* Blue dot — shown only when profile location and browser location are enabled */}
+            {/* Blue dot — GPS fix preferred, falls back to profile coords */}
             {(() => {
-              if (!locationEnabled) return null;
+              const dotLat = gpsCoords.lat ?? profileCoords?.lat ?? null;
+              const dotLng = gpsCoords.lng ?? profileCoords?.lng ?? null;
+              const isApprox = gpsCoords.lat == null && profileCoords != null;
+              if (dotLat == null || dotLng == null) return null;
               return (
-                <Marker longitude={gpsCoords.lng} latitude={gpsCoords.lat} anchor="center">
-                  <div className="exploreUserDot" />
+                <Marker longitude={dotLng} latitude={dotLat} anchor="center">
+                  <div className={`exploreUserDot${isApprox ? " exploreUserDot--approx" : ""}`} />
                 </Marker>
               );
             })()}

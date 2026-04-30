@@ -139,7 +139,6 @@ export default function RestaurantDetailPanel({
   const [activeHeroImageIndex, setActiveHeroImageIndex] = useState(0);
   const [geoPermission, setGeoPermission] = useState("prompt");
   const [browserLocation, setBrowserLocation] = useState(null);
-  const profileLocationEnabled = user?.latitude != null && user?.longitude != null;
 
   function pushRestaurantUpdate(nextRestaurant, nextReviews = null) {
     if (!nextRestaurant || typeof onRestaurantUpdated !== "function") return;
@@ -378,7 +377,7 @@ export default function RestaurantDetailPanel({
   const ratingDisplay = currentRestaurant?.rating ?? "N/A";
   const crowdMeta = useMemo(() => getCrowdMeterMeta(currentRestaurant || {}), [currentRestaurant]);
   const distanceDisplay = useMemo(() => {
-    if (!user?.id || !profileLocationEnabled || geoPermission !== "granted" || !browserLocation) return null;
+    if (!user?.id || geoPermission !== "granted" || !browserLocation) return null;
 
     const calculatedDistance = calculateDistanceKm(browserLocation, {
       latitude: currentRestaurant?.latitude,
@@ -389,7 +388,6 @@ export default function RestaurantDetailPanel({
     return calculatedDistance < 10 ? calculatedDistance.toFixed(1) : calculatedDistance.toFixed(2);
   }, [
     user?.id,
-    profileLocationEnabled,
     geoPermission,
     browserLocation,
     currentRestaurant?.latitude,

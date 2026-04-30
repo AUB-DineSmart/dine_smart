@@ -540,11 +540,12 @@ export default function UserDiscover({ onOpenRestaurant, onViewBooking }) {
   const [successOpen, setSuccessOpen] = useState(false);
   const profileLatitude = Number(user?.latitude);
   const profileLongitude = Number(user?.longitude);
-  const profileLocationEnabled = Number.isFinite(profileLatitude) && Number.isFinite(profileLongitude);
-  const browserLocationEnabled = coords.latitude != null && coords.longitude != null;
-  const locationEnabled = profileLocationEnabled && browserLocationEnabled;
-  const effectiveLatitude = locationEnabled ? coords.latitude : null;
-  const effectiveLongitude = locationEnabled ? coords.longitude : null;
+  const effectiveLatitude = coords.latitude != null
+    ? coords.latitude
+    : (Number.isFinite(profileLatitude) ? profileLatitude : null);
+  const effectiveLongitude = coords.longitude != null
+    ? coords.longitude
+    : (Number.isFinite(profileLongitude) ? profileLongitude : null);
   const rawAllEvents = useMemo(
     () => mergeEventsById(feed?.upcoming_events_nearby, publicEvents),
     [feed?.upcoming_events_nearby, publicEvents]
@@ -611,10 +612,6 @@ export default function UserDiscover({ onOpenRestaurant, onViewBooking }) {
   ]);
 
   useEffect(() => {
-    if (!profileLocationEnabled) {
-      setCoords({ latitude: null, longitude: null });
-      return;
-    }
     if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -628,7 +625,7 @@ export default function UserDiscover({ onOpenRestaurant, onViewBooking }) {
       },
       { timeout: 7000 }
     );
-  }, [profileLocationEnabled]);
+  }, []);
 
   useEffect(() => {
     const timer = window.setInterval(() => {

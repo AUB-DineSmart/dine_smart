@@ -1,6 +1,7 @@
 const crypto = require("crypto");
 const OpenAI = require("openai");
 const recommendationRepository = require("../repositories/recommendationRepository");
+const profileRepository = require("../repositories/profileRepository");
 
 const CACHE_TTL_MS = Number(process.env.RECOMMENDATION_CACHE_TTL_MS || 10 * 60 * 1000);
 const OPENAI_MODEL = process.env.RECOMMENDATION_OPENAI_MODEL || "gpt-4o-mini";
@@ -636,14 +637,25 @@ const runAiRecommendationSelection = async ({ preferenceProfile, candidates, lim
   };
 };
 
-const getEffectiveCoordinates = async ({ latitude, longitude }) => {
-  const resolvedLat = parseNullableNumber(latitude);
-  const resolvedLng = parseNullableNumber(longitude);
+const getEffectiveCoordinates = async ({ userId, latitude, longitude }) => {
+  let resolvedLat = parseNullableNumber(latitude);
+  let resolvedLng = parseNullableNumber(longitude);
   if (resolvedLat != null && resolvedLng != null) {
     return { latitude: resolvedLat, longitude: resolvedLng };
   }
 
-  return { latitude: null, longitude: null };
+  try {
+    const profile = await profileRepository.getById(userId);
+    const profileLat = parseNullableNumber(profile?.latitude);
+    const profileLng = parseNullableNumber(profile?.longitude);
+    resolvedLat = profileLat;
+    resolvedLng = profileLng;
+  } catch (_error) {
+    resolvedLat = null;
+    resolvedLng = null;
+  }
+
+  return { latitude: resolvedLat, longitude: resolvedLng };
 };
 
 const isHistoryStrong = (historySignals) => {
@@ -656,7 +668,7 @@ const hasPreferenceSignal = (preferenceProfile) => {
 
 const getRecommendations = async ({ userId, limit = 6, latitude = null, longitude = null }) => {
   const safeLimit = clampLimit(limit, 6);
-  const coords = await getEffectiveCoordinates({ latitude, longitude });
+  const coords = await getEffectiveCoordinates({ userId, latitude, longitude });
 
   const [reviews, favorites, reservations] = await Promise.all([
     recommendationRepository.getUserReviewHistory(userId, 40),

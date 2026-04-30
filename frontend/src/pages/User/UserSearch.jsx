@@ -536,8 +536,8 @@ export default function UserSearch({
 
   const effectiveGeo = useMemo(() => {
     if (!user?.id) return { latitude: null, longitude: null };
-    if (profileGeo.latitude == null || profileGeo.longitude == null) return { latitude: null, longitude: null };
     if (geo.latitude != null && geo.longitude != null) return { latitude: geo.latitude, longitude: geo.longitude };
+    if (profileGeo.latitude != null && profileGeo.longitude != null) return profileGeo;
     return { latitude: null, longitude: null };
   }, [user?.id, geo.latitude, geo.longitude, profileGeo]);
 
@@ -728,10 +728,6 @@ export default function UserSearch({
       setGeo({ latitude: null, longitude: null });
       return;
     }
-    if (profileGeo.latitude == null || profileGeo.longitude == null) {
-      setGeo({ latitude: null, longitude: null });
-      return;
-    }
     if (!filters.distanceEnabled) return;
     if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(
@@ -742,7 +738,7 @@ export default function UserSearch({
       () => setGeo({ latitude: null, longitude: null }),
       { timeout: 7000 }
     );
-  }, [user?.id, filters.distanceEnabled, profileGeo.latitude, profileGeo.longitude]);
+  }, [user?.id, filters.distanceEnabled]);
 
   useEffect(() => {
     if (!user?.id) return;
