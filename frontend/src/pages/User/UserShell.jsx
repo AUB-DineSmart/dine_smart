@@ -6,6 +6,7 @@ import { getProfile } from "../../services/profileService.js";
 import { getPublicEvents } from "../../services/restaurantService.js";
 import ConfirmDialog from "../../components/ConfirmDialog.jsx";
 import ChatWidget from "../../components/ChatWidget.jsx";
+import DashboardLoading from "../../components/DashboardLoading.jsx";
 import { lazyWithRetry, preloadLazy } from "../../utils/lazyWithRetry.js";
 
 const lazyImports = {
@@ -23,30 +24,7 @@ const UserDiscover = lazyWithRetry(lazyImports.UserDiscover, "pages/User/UserDis
 const UserExplore = lazyWithRetry(lazyImports.UserExplore, "pages/User/UserExplore");
 
 const USER_SEEN_EVENT_IDS_KEY = "ds-user-seen-event-ids";
-const DASHBOARD_LOADING_TEXT = "Loading your dashboard...";
-
-const TabLoader = () => (
-  <div className="placeholderPage">
-    <p className="placeholderPage__text">Loading...</p>
-  </div>
-);
-
-const DashboardLoader = () => (
-  <div className="placeholderPage userDashboardLoading" aria-live="polite" aria-busy="true">
-    <h1 className="placeholderPage__title userDashboardLoading__title" aria-label={DASHBOARD_LOADING_TEXT}>
-      {DASHBOARD_LOADING_TEXT.split("").map((character, index) => (
-        <span
-          key={`${character}-${index}`}
-          className="userDashboardLoading__letter"
-          style={{ animationDelay: `${index * 0.045}s` }}
-          aria-hidden="true"
-        >
-          {character === " " ? "\u00a0" : character}
-        </span>
-      ))}
-    </h1>
-  </div>
-);
+const TabLoader = () => <DashboardLoading />;
 
 function normalizeEventId(eventItem) {
   return String(eventItem?.id ?? "");
@@ -208,7 +186,7 @@ export default function UserShell({ initialActive = "search" }) {
   }, [user?.id, user?.latitude, user?.longitude, active]);
 
   if (loading) {
-    return <DashboardLoader />;
+    return <DashboardLoading />;
   }
   if (!user || user.role !== "user") return null;
 

@@ -1,4 +1,5 @@
 import { Component } from "react";
+import DashboardLoading from "./DashboardLoading.jsx";
 import { isDynamicImportError } from "../utils/lazyWithRetry.js";
 
 /**
@@ -51,11 +52,7 @@ export default class ErrorBoundary extends Component {
   render() {
     if (this.state.hasError) {
       if (this.state.recovering) {
-        return (
-          <div className="placeholderPage" aria-live="polite" aria-busy="true">
-            <div style={{ width: 120, height: 8, borderRadius: 4 }} className="loadingSkeleton" />
-          </div>
-        );
+        return <DashboardLoading />;
       }
 
       if (this.props.fallback) return this.props.fallback;

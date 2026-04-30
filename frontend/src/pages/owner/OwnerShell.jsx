@@ -6,6 +6,7 @@ import ConfirmDialog from "../../components/ConfirmDialog.jsx";
 import { getMyRestaurant } from "../../services/restaurantService.js";
 import { getOwnerReservations } from "../../services/reservationService.js";
 import { getReviewsByRestaurantId } from "../../services/reviewService.js";
+import DashboardLoading from "../../components/DashboardLoading.jsx";
 import { lazyWithRetry, preloadLazy } from "../../utils/lazyWithRetry.js";
 
 const lazyImports = {
@@ -27,11 +28,7 @@ const OwnerReservations = lazyWithRetry(lazyImports.OwnerReservations, "pages/ow
 const OWNER_SEEN_RESERVATIONS_KEY = "ds-owner-seen-reservation-ids";
 const OWNER_SEEN_REVIEWS_KEY = "ds-owner-seen-review-ids";
 
-const TabLoader = () => (
-  <div className="placeholderPage">
-    <p className="placeholderPage__text">Loading...</p>
-  </div>
-);
+const TabLoader = () => <DashboardLoading />;
 
 function normalizeReservationId(reservation) {
   return String(reservation?.id ?? "");
