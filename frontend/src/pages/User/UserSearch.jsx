@@ -1098,7 +1098,11 @@ export default function UserSearch({
       )}
 
       <div className="searchResultsHeader">
-        <p className="searchResultsHeader__count">{filteredRestaurants.length} restaurants found</p>
+        <p className="searchResultsHeader__count">
+          {restaurantsLoading
+            ? "Loading restaurants..."
+            : `${filteredRestaurants.length} restaurant${filteredRestaurants.length === 1 ? "" : "s"} found`}
+        </p>
         <div className="searchSortControl">
           <span>Sort by</span>
           <ThemedSelect

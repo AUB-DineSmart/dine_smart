@@ -442,7 +442,7 @@ export default function UserExplore({ onOpenRestaurant }) {
         {/* Left: restaurant list */}
         <div className="exploreListPanel">
           <p className="exploreListCount">
-            {loading ? "Loading restaurants..." : `${restaurants.length} restaurant${restaurants.length === 1 ? "" : "s"} found`}
+            {loading ? "Searching…" : `${restaurants.length} restaurant${restaurants.length !== 1 ? "s" : ""} found`}
           </p>
           {error && <p className="fieldError">{error}</p>}
 
