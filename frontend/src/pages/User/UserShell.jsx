@@ -25,14 +25,6 @@ const UserExplore = lazyWithRetry(lazyImports.UserExplore, "pages/User/UserExplo
 
 const USER_SEEN_EVENT_IDS_KEY = "ds-user-seen-event-ids";
 
-function getTabLoadingMessage(active) {
-  if (active === "discover") return "Loading events...";
-  if (active === "explore" || active === "search") return "Loading restaurants...";
-  if (active === "reservations") return "Loading reservations...";
-  if (active === "profile") return "Loading profile...";
-  return "Loading...";
-}
-
 function normalizeEventId(eventItem) {
   return String(eventItem?.id ?? "");
 }
@@ -224,7 +216,7 @@ export default function UserShell({ initialActive = "search" }) {
       />
 
       <main className="userArea__main">
-        <Suspense fallback={<DashboardLoading message={getTabLoadingMessage(active)} />}>
+        <Suspense fallback={null}>
           {openedTabs.profile && (
             <div style={{ display: active === "profile" ? "block" : "none" }}>
               <UserProfile
