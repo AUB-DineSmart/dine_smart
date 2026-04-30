@@ -4,7 +4,7 @@ import { FiArrowLeft, FiClock, FiMapPin, FiStar, FiTrash2 } from "react-icons/fi
 import { useAuth } from "../../auth/AuthContext.jsx";
 import { getReviewsByRestaurantId, createReview, deleteReview, flagReview } from "../../services/reviewService";
 import { getRestaurantById } from "../../services/restaurantService";
-import { getReservationAvailability } from "../../services/reservationService";
+import { getReservationAvailability, getReservationsByUserId } from "../../services/reservationService";
 import ReservationForm from "../../components/ReservationForm.jsx";
 import ConfirmDialog from "../../components/ConfirmDialog.jsx";
 
@@ -120,6 +120,8 @@ export default function RestaurantDetailPanel({
   const [reviewError, setReviewError] = useState("");
   const [reviewSuccess, setReviewSuccess] = useState("");
   const [reviewPosting, setReviewPosting] = useState(false);
+  const [reviewEligible, setReviewEligible] = useState(false);
+  const [reviewEligibilityLoading, setReviewEligibilityLoading] = useState(false);
   const [, setReviewRatingDropdownOpen] = useState(false);
   const [deleteReviewTarget, setDeleteReviewTarget] = useState(null);
   const [deleteReviewBusy, setDeleteReviewBusy] = useState(false);
@@ -169,6 +171,41 @@ export default function RestaurantDetailPanel({
       .catch(() => setReviews([]))
       .finally(() => setReviewsLoading(false));
   }, [currentRestaurant?.id]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setReviewError("");
+    setReviewSuccess("");
+    setReviewEligible(false);
+
+    if (!user?.id || !currentRestaurant?.id) {
+      setReviewEligibilityLoading(false);
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    setReviewEligibilityLoading(true);
+    getReservationsByUserId(user.id)
+      .then((reservations) => {
+        if (cancelled) return;
+        const eligible = Array.isArray(reservations) && reservations.some((reservation) =>
+          String(reservation.restaurant_id) === String(currentRestaurant.id) &&
+          String(reservation.status || "").toLowerCase() === "completed"
+        );
+        setReviewEligible(eligible);
+      })
+      .catch(() => {
+        if (!cancelled) setReviewEligible(false);
+      })
+      .finally(() => {
+        if (!cancelled) setReviewEligibilityLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, currentRestaurant?.id]);
 
   useEffect(() => {
     if (!currentRestaurant?.id) {
@@ -376,6 +413,10 @@ export default function RestaurantDetailPanel({
 
   async function handlePostReview() {
     if (!requireAuth()) return;
+    if (!reviewEligible) {
+      setReviewError("You can review this restaurant after completing a reservation.");
+      return;
+    }
     if (reviewComment.trim().length > 500) { setReviewError("Review must be at most 500 characters."); return; }
 
     setReviewError("");
@@ -744,45 +785,51 @@ export default function RestaurantDetailPanel({
 
           <div className="reviewCard">
             <div className="reviewCard__title">Add a review</div>
-            <div className="reviewComposer">
-              <div className="reviewComposer__top">
-                <ThemedSelect
-                  className="reviewCard__select"
-                  value={reviewRating}
-                  onChange={(nextValue) => {
-                    setReviewRating(Number(nextValue));
-                    setReviewRatingDropdownOpen(false);
-                  }}
+            {reviewEligibilityLoading ? (
+              <div className="reviewCard__helper">Checking review eligibility...</div>
+            ) : reviewEligible ? (
+              <div className="reviewComposer">
+                <div className="reviewComposer__top">
+                  <ThemedSelect
+                    className="reviewCard__select"
+                    value={reviewRating}
+                    onChange={(nextValue) => {
+                      setReviewRating(Number(nextValue));
+                      setReviewRatingDropdownOpen(false);
+                    }}
+                    disabled={reviewPosting}
+                    options={[5, 4, 3, 2, 1].map((value) => ({
+                      value,
+                      label: `${value} ${FILLED_STAR}`,
+                    }))}
+                    ariaLabel="Select review rating"
+                  />
+
+                  <button
+                    className="btn btn--gold reviewComposer__post"
+                    type="button"
+                    disabled={reviewPosting}
+                    onClick={handlePostReview}
+                  >
+                    {reviewPosting ? "Posting..." : "Post"}
+                  </button>
+                </div>
+
+                <textarea
+                  className="reviewCard__input reviewCard__input--textarea"
+                  placeholder="Write your review (optional, max 500 characters)"
+                  value={reviewComment}
+                  onChange={(e) => setReviewComment(e.target.value)}
+                  maxLength={500}
+                  rows={4}
                   disabled={reviewPosting}
-                  options={[5, 4, 3, 2, 1].map((value) => ({
-                    value,
-                    label: `${value} ${FILLED_STAR}`,
-                  }))}
-                  ariaLabel="Select review rating"
                 />
-
-                <button
-                  className="btn btn--gold reviewComposer__post"
-                  type="button"
-                  disabled={reviewPosting}
-                  onClick={handlePostReview}
-                >
-                  {reviewPosting ? "Posting..." : "Post"}
-                </button>
+                <span className="reviewCard__helper">Comment is optional.</span>
+                <span className="reviewCard__charCount">{reviewComment.length}/500</span>
               </div>
-
-              <textarea
-                className="reviewCard__input reviewCard__input--textarea"
-                placeholder="Write your review (optional, max 500 characters)"
-                value={reviewComment}
-                onChange={(e) => setReviewComment(e.target.value)}
-                maxLength={500}
-                rows={4}
-                disabled={reviewPosting}
-              />
-              <span className="reviewCard__helper">Comment is optional.</span>
-              <span className="reviewCard__charCount">{reviewComment.length}/500</span>
-            </div>
+            ) : (
+              <div className="reviewCard__helper">You can review this restaurant after completing a reservation.</div>
+            )}
 
             {reviewError && <div className="fieldError reviewCard__status">{reviewError}</div>}
             {reviewSuccess && <div className="formCard__success reviewCard__status">{reviewSuccess}</div>}

@@ -53,6 +53,18 @@ async function getUserReviewForRestaurant(db, userId, restaurantId) {
   return db.query(query, [userId, restaurantId]);
 }
 
+async function hasCompletedReservationForRestaurant(db, userId, restaurantId) {
+  const query = `
+    SELECT id
+    FROM reservations
+    WHERE user_id = $1
+      AND restaurant_id = $2
+      AND status = 'completed'
+    LIMIT 1;
+  `;
+  return db.query(query, [userId, restaurantId]);
+}
+
 async function getReviewById(db, reviewId) {
   const query = `
     SELECT id, restaurant_id, user_id, rating, comment, owner_response, owner_response_date, created_at, updated_at
@@ -167,6 +179,7 @@ module.exports = {
   createReview,
   getReviewsByRestaurant,
   getUserReviewForRestaurant,
+  hasCompletedReservationForRestaurant,
   getReviewById,
   updateReview,
   deleteReview,

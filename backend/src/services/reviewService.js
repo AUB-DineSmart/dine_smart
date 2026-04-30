@@ -22,6 +22,15 @@ const createReview = async (restaurantId, userId, { rating, comment }) => {
     return { success: false, error: "Restaurant not found", status: 404 };
   }
 
+  const completedReservation = await ReviewModel.hasCompletedReservationForRestaurant(db, userId, restaurantId);
+  if (completedReservation.rows.length === 0) {
+    return {
+      success: false,
+      error: "You can review this restaurant after completing a reservation.",
+      status: 403,
+    };
+  }
+
   const existing = await ReviewModel.getUserReviewForRestaurant(db, userId, restaurantId);
   if (existing.rows.length > 0) {
     return { success: false, error: "You have already reviewed this restaurant", status: 409 };
@@ -90,13 +99,22 @@ const updateReview = async (reviewId, userId, { rating, comment }) => {
     return { success: false, error: "You can only edit your own review", status: 403 };
   }
 
+  const restaurantId = reviewResult.rows[0].restaurant_id;
+  const completedReservation = await ReviewModel.hasCompletedReservationForRestaurant(db, userId, restaurantId);
+  if (completedReservation.rows.length === 0) {
+    return {
+      success: false,
+      error: "You can review this restaurant after completing a reservation.",
+      status: 403,
+    };
+  }
+
   const commentStr = comment != null ? String(comment).trim() : "";
   if (commentStr.length > RECOMMENT_MAX_LENGTH) {
     return { success: false, error: "Review comment must be at most 500 characters", status: 400 };
   }
 
   const result = await ReviewModel.updateReview(db, reviewId, userId, { rating, comment: commentStr || null });
-  const restaurantId = reviewResult.rows[0].restaurant_id;
   let moderation = null;
 
   if (commentStr) {
