@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useCallback, useEffect, useState } from "react";
+import React, { Suspense, useCallback, useEffect, useState } from "react";
 import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
 
 import { useAuth } from "./auth/AuthContext.jsx";
@@ -8,20 +8,36 @@ import Nav from "./components/Nav.jsx";
 import Hero from "./components/Hero.jsx";
 import MobileMenu from "./components/MobileMenu.jsx";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
+import { lazyWithRetry, preloadLazy } from "./utils/lazyWithRetry.js";
 
 // Code-split heavy areas — only loaded when the user navigates there
-const AuthModal = lazy(() => import("./components/AuthModal.jsx"));
-const DiscoverCarousel = lazy(() => import("./components/DiscoverCarousel.jsx"));
-const LandingHighlights = lazy(() => import("./components/LandingHighlights.jsx"));
-const EventsInviteSection = lazy(() => import("./components/EventsInviteSection.jsx"));
-const ContactSection = lazy(() => import("./components/ContactSection.jsx"));
-const OwnerShell = lazy(() => import("./pages/owner/OwnerShell.jsx"));
-const UserShell = lazy(() => import("./pages/User/UserShell.jsx"));
-const AdminShell = lazy(() => import("./pages/admin/AdminShell.jsx"));
-const AdminAccessPage = lazy(() => import("./pages/admin/AdminAccessPage.jsx"));
-const UserSearch = lazy(() => import("./pages/User/UserSearch.jsx"));
-const VerifyEmail = lazy(() => import("./pages/VerifyEmail.jsx"));
-const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage.jsx"));
+const lazyImports = {
+  AuthModal: () => import("./components/AuthModal.jsx"),
+  DiscoverCarousel: () => import("./components/DiscoverCarousel.jsx"),
+  LandingHighlights: () => import("./components/LandingHighlights.jsx"),
+  EventsInviteSection: () => import("./components/EventsInviteSection.jsx"),
+  ContactSection: () => import("./components/ContactSection.jsx"),
+  OwnerShell: () => import("./pages/owner/OwnerShell.jsx"),
+  UserShell: () => import("./pages/User/UserShell.jsx"),
+  AdminShell: () => import("./pages/admin/AdminShell.jsx"),
+  AdminAccessPage: () => import("./pages/admin/AdminAccessPage.jsx"),
+  UserSearch: () => import("./pages/User/UserSearch.jsx"),
+  VerifyEmail: () => import("./pages/VerifyEmail.jsx"),
+  ResetPasswordPage: () => import("./pages/ResetPasswordPage.jsx"),
+};
+
+const AuthModal = lazyWithRetry(lazyImports.AuthModal, "components/AuthModal");
+const DiscoverCarousel = lazyWithRetry(lazyImports.DiscoverCarousel, "components/DiscoverCarousel");
+const LandingHighlights = lazyWithRetry(lazyImports.LandingHighlights, "components/LandingHighlights");
+const EventsInviteSection = lazyWithRetry(lazyImports.EventsInviteSection, "components/EventsInviteSection");
+const ContactSection = lazyWithRetry(lazyImports.ContactSection, "components/ContactSection");
+const OwnerShell = lazyWithRetry(lazyImports.OwnerShell, "pages/owner/OwnerShell");
+const UserShell = lazyWithRetry(lazyImports.UserShell, "pages/User/UserShell");
+const AdminShell = lazyWithRetry(lazyImports.AdminShell, "pages/admin/AdminShell");
+const AdminAccessPage = lazyWithRetry(lazyImports.AdminAccessPage, "pages/admin/AdminAccessPage");
+const UserSearch = lazyWithRetry(lazyImports.UserSearch, "pages/User/UserSearch");
+const VerifyEmail = lazyWithRetry(lazyImports.VerifyEmail, "pages/VerifyEmail");
+const ResetPasswordPage = lazyWithRetry(lazyImports.ResetPasswordPage, "pages/ResetPasswordPage");
 
 import AdminRoute from "./routes/AdminRoute.jsx";
 
@@ -63,6 +79,22 @@ function AppContent() {
 
   const openMobile = useCallback(() => setMobileOpen(true), []);
   const closeMobile = useCallback(() => setMobileOpen(false), []);
+
+  useEffect(() => {
+    const runWhenIdle = window.requestIdleCallback || ((callback) => window.setTimeout(callback, 250));
+    const cancelIdle = window.cancelIdleCallback || window.clearTimeout;
+
+    const idleId = runWhenIdle(() => {
+      preloadLazy(lazyImports.UserSearch, "pages/User/UserSearch");
+      preloadLazy(lazyImports.DiscoverCarousel, "components/DiscoverCarousel");
+
+      if (user?.role === "user") preloadLazy(lazyImports.UserShell, "pages/User/UserShell");
+      if (user?.role === "owner") preloadLazy(lazyImports.OwnerShell, "pages/owner/OwnerShell");
+      if (user?.role === "admin") preloadLazy(lazyImports.AdminShell, "pages/admin/AdminShell");
+    });
+
+    return () => cancelIdle(idleId);
+  }, [user?.role]);
 
   const goToSection = useCallback((view, id) => {
     setLandingView(view);

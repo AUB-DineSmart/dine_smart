@@ -681,6 +681,7 @@ export default function UserSearch({
 
   useEffect(() => {
     let cancelled = false;
+    const controller = new AbortController();
     setRestaurantsLoading(true);
     setRestaurantsError("");
 
@@ -698,15 +699,16 @@ export default function UserSearch({
       sortBy: filters.sortBy,
     };
 
-    searchRestaurants(query.trim(), filters.cuisines, payload)
+    searchRestaurants(query.trim(), filters.cuisines, payload, { signal: controller.signal })
       .then((filtered) => {
         if (cancelled) return;
         const nextRestaurants = Array.isArray(filtered) ? filtered : [];
         setRestaurants(nextRestaurants);
         setBaseRestaurants(nextRestaurants);
       })
-      .catch(() => {
+      .catch((error) => {
         if (cancelled) return;
+        if (error?.name === "AbortError") return;
         setRestaurants([]);
         setBaseRestaurants([]);
         setRestaurantsError("We couldn't load restaurants. Check your connection and try again.");
@@ -717,6 +719,7 @@ export default function UserSearch({
 
     return () => {
       cancelled = true;
+      controller.abort();
     };
   }, [query, filters, effectiveGeo.latitude, effectiveGeo.longitude, refreshKey]);
 

@@ -69,7 +69,7 @@ export async function saveOwnerRestaurantTableConfig(restaurantId, data) {
  * @param {Object} filters - Advanced filters
  * @returns {Promise} Filtered restaurants
  */
-export async function searchRestaurants(query, cuisines, filters = {}) {
+export async function searchRestaurants(query, cuisines, filters = {}, options = {}) {
   const params = new URLSearchParams();
   if (query != null && String(query).trim()) params.set("query", query.trim());
   if (cuisines != null && cuisines !== "All") {
@@ -115,7 +115,7 @@ export async function searchRestaurants(query, cuisines, filters = {}) {
     params.set("sort_by", String(filters.sortBy));
   }
 
-  return apiRequest(`/search?${params.toString()}`, { method: "GET" });
+  return apiRequest(`/search?${params.toString()}`, { method: "GET", ...options });
 }
 
 export async function getDiscoverFeed({ latitude, longitude, distanceRadius, limit = 8 } = {}) {

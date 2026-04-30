@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import React, { Suspense, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
 import OwnerNav from "./OwnerNav.jsx";
@@ -6,13 +6,23 @@ import ConfirmDialog from "../../components/ConfirmDialog.jsx";
 import { getMyRestaurant } from "../../services/restaurantService.js";
 import { getOwnerReservations } from "../../services/reservationService.js";
 import { getReviewsByRestaurantId } from "../../services/reviewService.js";
+import { lazyWithRetry, preloadLazy } from "../../utils/lazyWithRetry.js";
 
-const OwnerProfile = lazy(() => import("./OwnerProfile.jsx"));
-const OwnerMenu = lazy(() => import("./OwnerMenu.jsx"));
-const RestaurantTableConfig = lazy(() => import("./RestaurantTableConfig.jsx"));
-const OwnerEvents = lazy(() => import("./OwnerEvents.jsx"));
-const OwnerReviews = lazy(() => import("./OwnerReviews.jsx"));
-const OwnerReservations = lazy(() => import("./OwnerReservations.jsx"));
+const lazyImports = {
+  OwnerProfile: () => import("./OwnerProfile.jsx"),
+  OwnerMenu: () => import("./OwnerMenu.jsx"),
+  RestaurantTableConfig: () => import("./RestaurantTableConfig.jsx"),
+  OwnerEvents: () => import("./OwnerEvents.jsx"),
+  OwnerReviews: () => import("./OwnerReviews.jsx"),
+  OwnerReservations: () => import("./OwnerReservations.jsx"),
+};
+
+const OwnerProfile = lazyWithRetry(lazyImports.OwnerProfile, "pages/owner/OwnerProfile");
+const OwnerMenu = lazyWithRetry(lazyImports.OwnerMenu, "pages/owner/OwnerMenu");
+const RestaurantTableConfig = lazyWithRetry(lazyImports.RestaurantTableConfig, "pages/owner/RestaurantTableConfig");
+const OwnerEvents = lazyWithRetry(lazyImports.OwnerEvents, "pages/owner/OwnerEvents");
+const OwnerReviews = lazyWithRetry(lazyImports.OwnerReviews, "pages/owner/OwnerReviews");
+const OwnerReservations = lazyWithRetry(lazyImports.OwnerReservations, "pages/owner/OwnerReservations");
 
 const OWNER_SEEN_RESERVATIONS_KEY = "ds-owner-seen-reservation-ids";
 const OWNER_SEEN_REVIEWS_KEY = "ds-owner-seen-review-ids";
@@ -33,6 +43,7 @@ function normalizeReviewId(review) {
 
 export default function OwnerShell() {
   const [active, setActive] = useState("profile");
+  const [openedTabs, setOpenedTabs] = useState({ profile: true });
   const [confirmLogoutOpen, setConfirmLogoutOpen] = useState(false);
   const navigate = useNavigate();
   const { user, logout, loading } = useAuth();
@@ -47,6 +58,30 @@ export default function OwnerShell() {
       navigate("/", { replace: true });
     }
   }, [loading, user, navigate]);
+
+  useEffect(() => {
+    if (!["profile", "menu", "table-config", "events", "reviews", "reservations"].includes(active)) return;
+    setOpenedTabs((prev) => {
+      if (prev[active]) return prev;
+      return { ...prev, [active]: true };
+    });
+  }, [active]);
+
+  useEffect(() => {
+    const runWhenIdle = window.requestIdleCallback || ((callback) => window.setTimeout(callback, 250));
+    const cancelIdle = window.cancelIdleCallback || window.clearTimeout;
+
+    const idleId = runWhenIdle(() => {
+      preloadLazy(lazyImports.OwnerProfile, "pages/owner/OwnerProfile");
+      preloadLazy(lazyImports.OwnerMenu, "pages/owner/OwnerMenu");
+      preloadLazy(lazyImports.RestaurantTableConfig, "pages/owner/RestaurantTableConfig");
+      preloadLazy(lazyImports.OwnerEvents, "pages/owner/OwnerEvents");
+      preloadLazy(lazyImports.OwnerReviews, "pages/owner/OwnerReviews");
+      preloadLazy(lazyImports.OwnerReservations, "pages/owner/OwnerReservations");
+    });
+
+    return () => cancelIdle(idleId);
+  }, []);
 
   const fetchApprovalStatus = () => {
     if (!user?.id) return;
@@ -269,19 +304,41 @@ export default function OwnerShell() {
         )}
 
         <Suspense fallback={<TabLoader />}>
-          {active === "profile" && (
-            <OwnerProfile onLogoPreviewChange={setRestaurantLogoUrl} onSaved={fetchApprovalStatus} />
+          {openedTabs.profile && (
+            <div style={{ display: active === "profile" ? "block" : "none" }}>
+              <OwnerProfile onLogoPreviewChange={setRestaurantLogoUrl} onSaved={fetchApprovalStatus} />
+            </div>
           )}
 
-          {active === "menu" && <OwnerMenu />}
+          {openedTabs.menu && (
+            <div style={{ display: active === "menu" ? "block" : "none" }}>
+              <OwnerMenu />
+            </div>
+          )}
 
-          {active === "table-config" && <RestaurantTableConfig />}
+          {openedTabs["table-config"] && (
+            <div style={{ display: active === "table-config" ? "block" : "none" }}>
+              <RestaurantTableConfig />
+            </div>
+          )}
 
-          {active === "events" && <OwnerEvents />}
+          {openedTabs.events && (
+            <div style={{ display: active === "events" ? "block" : "none" }}>
+              <OwnerEvents />
+            </div>
+          )}
 
-          {active === "reviews" && <OwnerReviews />}
+          {openedTabs.reviews && (
+            <div style={{ display: active === "reviews" ? "block" : "none" }}>
+              <OwnerReviews />
+            </div>
+          )}
 
-          {active === "reservations" && <OwnerReservations />}
+          {openedTabs.reservations && (
+            <div style={{ display: active === "reservations" ? "block" : "none" }}>
+              <OwnerReservations />
+            </div>
+          )}
         </Suspense>
 
         {active !== "profile" &&

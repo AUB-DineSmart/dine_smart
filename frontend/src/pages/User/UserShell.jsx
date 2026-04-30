@@ -1,4 +1,4 @@
-import React, { lazy, Suspense, useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
 import UserNav from "./UserNav.jsx";
@@ -6,12 +6,21 @@ import { getProfile } from "../../services/profileService.js";
 import { getPublicEvents } from "../../services/restaurantService.js";
 import ConfirmDialog from "../../components/ConfirmDialog.jsx";
 import ChatWidget from "../../components/ChatWidget.jsx";
+import { lazyWithRetry, preloadLazy } from "../../utils/lazyWithRetry.js";
 
-const UserSearch = lazy(() => import("./UserSearch.jsx"));
-const UserProfile = lazy(() => import("./UserProfile.jsx"));
-const UserReservations = lazy(() => import("./UserReservations.jsx"));
-const UserDiscover = lazy(() => import("./UserDiscover.jsx"));
-const UserExplore = lazy(() => import("./UserExplore.jsx"));
+const lazyImports = {
+  UserSearch: () => import("./UserSearch.jsx"),
+  UserProfile: () => import("./UserProfile.jsx"),
+  UserReservations: () => import("./UserReservations.jsx"),
+  UserDiscover: () => import("./UserDiscover.jsx"),
+  UserExplore: () => import("./UserExplore.jsx"),
+};
+
+const UserSearch = lazyWithRetry(lazyImports.UserSearch, "pages/User/UserSearch");
+const UserProfile = lazyWithRetry(lazyImports.UserProfile, "pages/User/UserProfile");
+const UserReservations = lazyWithRetry(lazyImports.UserReservations, "pages/User/UserReservations");
+const UserDiscover = lazyWithRetry(lazyImports.UserDiscover, "pages/User/UserDiscover");
+const UserExplore = lazyWithRetry(lazyImports.UserExplore, "pages/User/UserExplore");
 
 const USER_SEEN_EVENT_IDS_KEY = "ds-user-seen-event-ids";
 const DASHBOARD_LOADING_TEXT = "Loading your dashboard...";
@@ -48,6 +57,7 @@ export default function UserShell({ initialActive = "search" }) {
   const [openedTabs, setOpenedTabs] = useState(() => ({
     search: initialActive === "search",
     discover: initialActive === "discover",
+    explore: initialActive === "explore",
     reservations: initialActive === "reservations",
     profile: initialActive === "profile",
   }));
@@ -65,12 +75,27 @@ export default function UserShell({ initialActive = "search" }) {
   }, [initialActive]);
 
   useEffect(() => {
-    if (!["search", "discover", "reservations", "profile"].includes(active)) return;
+    if (!["search", "discover", "explore", "reservations", "profile"].includes(active)) return;
     setOpenedTabs((prev) => {
       if (prev[active]) return prev;
       return { ...prev, [active]: true };
     });
   }, [active]);
+
+  useEffect(() => {
+    const runWhenIdle = window.requestIdleCallback || ((callback) => window.setTimeout(callback, 250));
+    const cancelIdle = window.cancelIdleCallback || window.clearTimeout;
+
+    const idleId = runWhenIdle(() => {
+      preloadLazy(lazyImports.UserSearch, "pages/User/UserSearch");
+      preloadLazy(lazyImports.UserDiscover, "pages/User/UserDiscover");
+      preloadLazy(lazyImports.UserReservations, "pages/User/UserReservations");
+      preloadLazy(lazyImports.UserProfile, "pages/User/UserProfile");
+      preloadLazy(lazyImports.UserExplore, "pages/User/UserExplore");
+    });
+
+    return () => cancelIdle(idleId);
+  }, []);
 
   useEffect(() => {
     if (!loading && (!user || user.role !== "user")) {
@@ -252,8 +277,8 @@ export default function UserShell({ initialActive = "search" }) {
             </div>
           )}
 
-          {active === "explore" && (
-            <div>
+          {openedTabs.explore && (
+            <div style={{ display: active === "explore" ? "block" : "none" }}>
               <UserExplore
                 onOpenRestaurant={(restaurant) => {
                   setRestaurantToOpen(restaurant);

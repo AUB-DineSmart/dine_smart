@@ -1,4 +1,5 @@
 import { Component } from "react";
+import { isDynamicImportError } from "../utils/lazyWithRetry.js";
 
 /**
  * ErrorBoundary — catches render errors and shows a fallback UI
@@ -16,19 +17,47 @@ import { Component } from "react";
 export default class ErrorBoundary extends Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false, error: null };
+    this.state = { hasError: false, error: null, recovering: false };
+    this.recoveryTimer = null;
   }
 
   static getDerivedStateFromError(error) {
-    return { hasError: true, error };
+    return { hasError: true, error, recovering: isDynamicImportError(error) };
   }
 
   componentDidCatch(error, info) {
     console.error("[ErrorBoundary]", error, info?.componentStack);
+
+    if (!isDynamicImportError(error)) return;
+
+    const recoveryKey = `dinesmart:chunk-recovery:${window.location.pathname}`;
+    const alreadyRecovered = sessionStorage.getItem(recoveryKey) === "1";
+
+    if (alreadyRecovered) {
+      this.setState({ recovering: false });
+      return;
+    }
+
+    sessionStorage.setItem(recoveryKey, "1");
+    this.recoveryTimer = window.setTimeout(() => {
+      window.location.reload();
+    }, 700);
+  }
+
+  componentWillUnmount() {
+    if (this.recoveryTimer) window.clearTimeout(this.recoveryTimer);
   }
 
   render() {
     if (this.state.hasError) {
+      if (this.state.recovering) {
+        return (
+          <div className="placeholderPage" aria-live="polite" aria-busy="true">
+            <div style={{ width: 120, height: 8, borderRadius: 4 }} className="loadingSkeleton" />
+          </div>
+        );
+      }
+
       if (this.props.fallback) return this.props.fallback;
       return (
         <div className="errorBoundary" role="alert">
@@ -39,7 +68,7 @@ export default class ErrorBoundary extends Component {
           <button
             type="button"
             className="btn btn--gold"
-            onClick={() => this.setState({ hasError: false, error: null })}
+            onClick={() => this.setState({ hasError: false, error: null, recovering: false })}
           >
             Try again
           </button>
