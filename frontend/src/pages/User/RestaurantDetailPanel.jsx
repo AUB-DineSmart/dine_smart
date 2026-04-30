@@ -138,6 +138,8 @@ export default function RestaurantDetailPanel({
   const [currentRestaurant, setCurrentRestaurant] = useState(restaurant);
   const [activeHeroImageIndex, setActiveHeroImageIndex] = useState(0);
   const [geoPermission, setGeoPermission] = useState("prompt");
+  const [geoPermissionChecking, setGeoPermissionChecking] = useState(true);
+  const [browserLocationLoading, setBrowserLocationLoading] = useState(false);
   const [browserLocation, setBrowserLocation] = useState(null);
 
   function pushRestaurantUpdate(nextRestaurant, nextReviews = null) {
@@ -170,6 +172,7 @@ export default function RestaurantDetailPanel({
 
     if (!navigator.geolocation) {
       setGeoPermission("denied");
+      setGeoPermissionChecking(false);
       setBrowserLocation(null);
       return () => {
         cancelled = true;
@@ -178,6 +181,7 @@ export default function RestaurantDetailPanel({
 
     if (!navigator.permissions?.query) {
       setGeoPermission("prompt");
+      setGeoPermissionChecking(false);
       setBrowserLocation(null);
       return () => {
         cancelled = true;
@@ -190,6 +194,7 @@ export default function RestaurantDetailPanel({
         if (cancelled) return;
         permissionStatus = status;
         setGeoPermission(status.state);
+        setGeoPermissionChecking(false);
 
         status.onchange = () => {
           setGeoPermission(status.state);
@@ -199,6 +204,7 @@ export default function RestaurantDetailPanel({
       .catch(() => {
         if (!cancelled) {
           setGeoPermission("prompt");
+          setGeoPermissionChecking(false);
           setBrowserLocation(null);
         }
       });
@@ -212,17 +218,24 @@ export default function RestaurantDetailPanel({
   useEffect(() => {
     if (geoPermission !== "granted" || !navigator.geolocation) {
       setBrowserLocation(null);
+      setBrowserLocationLoading(false);
       return undefined;
     }
+
+    setBrowserLocationLoading(true);
 
     const applyPosition = (position) => {
       setBrowserLocation({
         latitude: Number(position.coords.latitude.toFixed(6)),
         longitude: Number(position.coords.longitude.toFixed(6)),
       });
+      setBrowserLocationLoading(false);
     };
 
-    const handleError = () => setBrowserLocation(null);
+    const handleError = () => {
+      setBrowserLocation(null);
+      setBrowserLocationLoading(false);
+    };
 
     navigator.geolocation.getCurrentPosition(applyPosition, handleError, {
       enableHighAccuracy: false,
@@ -393,6 +406,11 @@ export default function RestaurantDetailPanel({
     currentRestaurant?.latitude,
     currentRestaurant?.longitude,
   ]);
+  const distanceValueText = useMemo(() => {
+    if (distanceDisplay != null) return `${distanceDisplay} km`;
+    if (geoPermissionChecking || (geoPermission === "granted" && browserLocationLoading)) return "Loading...";
+    return "Unavailable";
+  }, [browserLocationLoading, distanceDisplay, geoPermission, geoPermissionChecking]);
 
   const restaurantHoursLabel = useMemo(() => {
     if (!currentRestaurant) return "Hours unavailable";
@@ -643,7 +661,7 @@ export default function RestaurantDetailPanel({
             <div className="restaurantHeroInfoText">
               <span className="restaurantHeroInfoLabel">Distance</span>
               <span className="restaurantHeroInfoValue">
-                {distanceDisplay != null ? `${distanceDisplay} km` : "Unavailable"}
+                {distanceValueText}
               </span>
             </div>
           </div>
