@@ -137,6 +137,8 @@ export default function RestaurantDetailPanel({
   const [reservationAvailabilityError, setReservationAvailabilityError] = useState("");
   const [currentRestaurant, setCurrentRestaurant] = useState(restaurant);
   const [activeHeroImageIndex, setActiveHeroImageIndex] = useState(0);
+  const [geoPermission, setGeoPermission] = useState("prompt");
+  const [browserLocation, setBrowserLocation] = useState(null);
 
   function pushRestaurantUpdate(nextRestaurant, nextReviews = null) {
     if (!nextRestaurant || typeof onRestaurantUpdated !== "function") return;
@@ -161,6 +163,81 @@ export default function RestaurantDetailPanel({
   const reviewsSectionRef = useRef(null);
 
   useEffect(() => { setCurrentRestaurant(restaurant); }, [restaurant]);
+
+  useEffect(() => {
+    let cancelled = false;
+    let permissionStatus = null;
+
+    if (!navigator.geolocation) {
+      setGeoPermission("denied");
+      setBrowserLocation(null);
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    if (!navigator.permissions?.query) {
+      setGeoPermission("prompt");
+      setBrowserLocation(null);
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    navigator.permissions
+      .query({ name: "geolocation" })
+      .then((status) => {
+        if (cancelled) return;
+        permissionStatus = status;
+        setGeoPermission(status.state);
+
+        status.onchange = () => {
+          setGeoPermission(status.state);
+          if (status.state !== "granted") setBrowserLocation(null);
+        };
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setGeoPermission("prompt");
+          setBrowserLocation(null);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+      if (permissionStatus) permissionStatus.onchange = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (geoPermission !== "granted" || !navigator.geolocation) {
+      setBrowserLocation(null);
+      return undefined;
+    }
+
+    const applyPosition = (position) => {
+      setBrowserLocation({
+        latitude: Number(position.coords.latitude.toFixed(6)),
+        longitude: Number(position.coords.longitude.toFixed(6)),
+      });
+    };
+
+    const handleError = () => setBrowserLocation(null);
+
+    navigator.geolocation.getCurrentPosition(applyPosition, handleError, {
+      enableHighAccuracy: false,
+      timeout: 8000,
+      maximumAge: 0,
+    });
+
+    const watchId = navigator.geolocation.watchPosition(applyPosition, handleError, {
+      enableHighAccuracy: false,
+      timeout: 10000,
+      maximumAge: 0,
+    });
+
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, [geoPermission]);
 
   useEffect(() => {
     if (!currentRestaurant?.id) return;
@@ -300,28 +377,21 @@ export default function RestaurantDetailPanel({
   const ratingDisplay = currentRestaurant?.rating ?? "N/A";
   const crowdMeta = useMemo(() => getCrowdMeterMeta(currentRestaurant || {}), [currentRestaurant]);
   const distanceDisplay = useMemo(() => {
-    if (!user?.id) return null;
-    const location = {
-      latitude: userLocation?.latitude ?? user?.latitude,
-      longitude: userLocation?.longitude ?? user?.longitude,
-    };
-    const calculatedDistance = calculateDistanceKm(location, {
+    if (!user?.id || geoPermission !== "granted" || !browserLocation) return null;
+
+    const calculatedDistance = calculateDistanceKm(browserLocation, {
       latitude: currentRestaurant?.latitude,
       longitude: currentRestaurant?.longitude,
     });
-    if (calculatedDistance != null) return calculatedDistance.toFixed(2);
 
-    const fallbackDistance = Number(currentRestaurant?.distance_km);
-    return Number.isFinite(fallbackDistance) ? fallbackDistance.toFixed(2) : null;
+    if (calculatedDistance == null) return null;
+    return calculatedDistance < 10 ? calculatedDistance.toFixed(1) : calculatedDistance.toFixed(2);
   }, [
     user?.id,
-    user?.latitude,
-    user?.longitude,
-    userLocation?.latitude,
-    userLocation?.longitude,
+    geoPermission,
+    browserLocation,
     currentRestaurant?.latitude,
     currentRestaurant?.longitude,
-    currentRestaurant?.distance_km,
   ]);
 
   const restaurantHoursLabel = useMemo(() => {
