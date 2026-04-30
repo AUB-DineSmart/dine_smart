@@ -417,7 +417,7 @@ export default function RestaurantDetailPanel({
     const opening = currentRestaurant.opening_time ?? currentRestaurant.openingTime;
     const closing = currentRestaurant.closing_time ?? currentRestaurant.closingTime;
     if (!opening || !closing) return "Hours unavailable";
-    return `${String(opening).slice(0, 5)} - ${String(closing).slice(0, 5)}`;
+    return `${formatTimeLabel(opening)} - ${formatTimeLabel(closing)}`;
   }, [currentRestaurant]);
 
   const restaurantGalleryUrls = useMemo(() => {
