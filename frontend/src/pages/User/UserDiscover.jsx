@@ -160,6 +160,7 @@ function getEventModalTagClass(cardClassName = "") {
 }
 
 function EventCard({ event, onViewDetails, onJoinEvent }) {
+  const [descriptionExpanded, setDescriptionExpanded] = useState(false);
   const eventStart = buildEventDateTime(event.start_date || event.event_date || event.startDate, event.start_time);
   const eventEnd = buildEventEndDateTime(
     event.end_date || event.endDate || event.event_date || event.start_date || event.startDate,
@@ -233,7 +234,22 @@ function EventCard({ event, onViewDetails, onJoinEvent }) {
           </div>
         </div>
 
-        <p className="eventSearchCard__description">
+        <p
+          className={`eventSearchCard__description${descriptionExpanded ? " is-expanded" : ""}`}
+          role="button"
+          tabIndex={0}
+          title={event.description || "No description provided yet."}
+          onClick={(e) => {
+            e.stopPropagation();
+            setDescriptionExpanded((expanded) => !expanded);
+          }}
+          onKeyDown={(e) => {
+            if (e.key !== "Enter" && e.key !== " ") return;
+            e.preventDefault();
+            e.stopPropagation();
+            setDescriptionExpanded((expanded) => !expanded);
+          }}
+        >
           {event.description || "No description provided yet."}
         </p>
 
