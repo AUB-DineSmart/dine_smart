@@ -7,6 +7,7 @@ import {
   unbanAdminUser,
 } from "../../services/adminService";
 import ConfirmDialog from "../../components/ConfirmDialog.jsx";
+import DashboardLoading from "../../components/DashboardLoading.jsx";
 import ThemedSelect from "../../components/ThemedSelect.jsx";
 
 const PAGE_SIZE = 10;
@@ -189,6 +190,10 @@ export default function UserManagementPage() {
     }
   }
 
+  if (loading) {
+    return <DashboardLoading message="Loading users..." />;
+  }
+
   return (
     <div className="adminPage">
       <h1 className="ownerProfile__title">User Management</h1>
@@ -239,9 +244,7 @@ export default function UserManagementPage() {
 
       <div className="adminUsersLayout">
         <div className="formCard adminUsersTableCard">
-          {loading ? (
-            <p className="placeholderPage__text">Loading users...</p>
-          ) : users.length === 0 ? (
+          {users.length === 0 ? (
             <p className="placeholderPage__text">No users found.</p>
           ) : (
             <table className="adminTable">

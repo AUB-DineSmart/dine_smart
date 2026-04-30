@@ -4,6 +4,7 @@ import {
   getOwnerRestaurantTableConfig,
   saveOwnerRestaurantTableConfig,
 } from "../../services/restaurantService";
+import DashboardLoading from "../../components/DashboardLoading.jsx";
 
 const INITIAL_FORM = {
   total_capacity: "38",
@@ -167,12 +168,7 @@ export default function RestaurantTableConfig() {
   }
 
   if (loading) {
-    return (
-      <div className="placeholderPage">
-        <h1 className="placeholderPage__title">Table Configuration</h1>
-        <p className="placeholderPage__text">Loading configuration...</p>
-      </div>
-    );
+    return <DashboardLoading message="Loading configuration..." />;
   }
 
   if (!restaurant) {

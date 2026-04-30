@@ -6,6 +6,7 @@ import {
   updateAdminAiSettings,
   downloadStatsCsv,
 } from "../../services/adminService";
+import DashboardLoading from "../../components/DashboardLoading.jsx";
 
 function formatActivityType(type) {
   if (type === "user_registration") return "New user registration";
@@ -78,6 +79,10 @@ export default function AdminDashboard({ onOpenPending, onOpenFlags, onOpenUsers
     }
   }
 
+  if (loading) {
+    return <DashboardLoading message="Loading dashboard..." />;
+  }
+
   return (
     <div className="adminPage">
       <h1 className="ownerProfile__title">Admin Dashboard</h1>
@@ -87,19 +92,19 @@ export default function AdminDashboard({ onOpenPending, onOpenFlags, onOpenUsers
       <div className="adminStatsGrid">
         <div className="formCard adminStatCard">
           <div className="adminStatCard__label">Users</div>
-          <div className="adminStatCard__value">{loading ? "..." : stats?.total_users ?? 0}</div>
+          <div className="adminStatCard__value">{stats?.total_users ?? 0}</div>
         </div>
         <div className="formCard adminStatCard">
           <div className="adminStatCard__label">Restaurants</div>
-          <div className="adminStatCard__value">{loading ? "..." : stats?.total_restaurants ?? 0}</div>
+          <div className="adminStatCard__value">{stats?.total_restaurants ?? 0}</div>
         </div>
         <div className="formCard adminStatCard">
           <div className="adminStatCard__label">Pending</div>
-          <div className="adminStatCard__value">{loading ? "..." : stats?.pending_approvals ?? 0}</div>
+          <div className="adminStatCard__value">{stats?.pending_approvals ?? 0}</div>
         </div>
         <div className="formCard adminStatCard">
           <div className="adminStatCard__label">Flags</div>
-          <div className="adminStatCard__value">{loading ? "..." : stats?.flagged_reviews ?? 0}</div>
+          <div className="adminStatCard__value">{stats?.flagged_reviews ?? 0}</div>
         </div>
       </div>
 
@@ -118,9 +123,7 @@ export default function AdminDashboard({ onOpenPending, onOpenFlags, onOpenUsers
       <div className="formCard adminAiCard">
         <div className="ownerTableConfigSectionTitle">AI Chat</div>
         <p className="adminAiCard__text">
-          {loading
-            ? "Loading AI chat status..."
-            : aiSettings?.ai_chat_enabled
+          {aiSettings?.ai_chat_enabled
               ? "AI chat is currently enabled for users."
               : "AI chat is currently disabled for users."}
         </p>
@@ -145,9 +148,7 @@ export default function AdminDashboard({ onOpenPending, onOpenFlags, onOpenUsers
 
       <div className="formCard adminActivityCard">
         <div className="ownerTableConfigSectionTitle">Recent Activity</div>
-        {loading ? (
-          <p className="placeholderPage__text">Loading activity...</p>
-        ) : activity.length ? (
+        {activity.length ? (
           <div className="adminActivityList">
             {activity.map((item) => (
               <div className="adminActivityItem" key={`${item.type}-${item.entity_id}-${item.created_at}`}>

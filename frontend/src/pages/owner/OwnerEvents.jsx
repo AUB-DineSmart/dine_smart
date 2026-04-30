@@ -11,6 +11,7 @@ import {
 } from "../../services/restaurantService";
 import ConfirmDialog from "../../components/ConfirmDialog.jsx";
 import EmptyState from "../../components/EmptyState.jsx";
+import DashboardLoading from "../../components/DashboardLoading.jsx";
 import ThemedSelect from "../../components/ThemedSelect.jsx";
 
 const TAG_OPTIONS = ["Free", "Trending", "Ending Soon", "Family", "Live Music", "Outdoor"];
@@ -604,12 +605,7 @@ export default function OwnerEvents() {
   }, [manageStatusFilter, manageCreatedRange, manageSortBy]);
 
   if (loading) {
-    return (
-      <div className="placeholderPage">
-        <h1 className="placeholderPage__title">Events</h1>
-        <p className="placeholderPage__text">Loading events...</p>
-      </div>
-    );
+    return <DashboardLoading message="Loading events..." />;
   }
 
   return (

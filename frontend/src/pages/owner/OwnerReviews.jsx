@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { getReviewsByRestaurantId, respondToReviewAsOwner } from "../../services/reviewService";
 import { getMyRestaurant } from "../../services/restaurantService";
 import { DEFAULT_AVATAR } from "../../constants/avatar";
+import DashboardLoading from "../../components/DashboardLoading.jsx";
 
 const FILLED_STAR = "\u2605";
 const EMPTY_STAR = "\u2606";
@@ -184,12 +185,7 @@ export default function OwnerReviews() {
   }
 
   if (loading) {
-    return (
-      <div className="placeholderPage">
-        <h1 className="placeholderPage__title">Reviews</h1>
-        <p className="placeholderPage__text">Loading reviews...</p>
-      </div>
-    );
+    return <DashboardLoading message="Loading reviews..." />;
   }
 
   if (!restaurant) {

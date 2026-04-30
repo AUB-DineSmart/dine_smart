@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { getMyRestaurant, updateMyRestaurant } from "../../services/restaurantService";
 import ConfirmDialog from "../../components/ConfirmDialog.jsx";
+import DashboardLoading from "../../components/DashboardLoading.jsx";
 import ThemedSelect from "../../components/ThemedSelect.jsx";
 
 const CURRENCIES = ["USD", "LBP", "EUR"];
@@ -432,11 +433,7 @@ export default function OwnerMenu() {
   }
 
   if (menuLoading) {
-    return (
-      <div className="ownerMenuPage">
-        <p className="menuSectionEmpty" style={{ padding: "20px" }}>Loading menu...</p>
-      </div>
-    );
+    return <DashboardLoading message="Loading menu..." />;
   }
 
   return (

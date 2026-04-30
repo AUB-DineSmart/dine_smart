@@ -14,6 +14,7 @@ import { FILLED_STAR, EMPTY_STAR } from "../../constants/filters";
 import { DEFAULT_AVATAR } from "../../constants/avatar";
 import ThemedSelect from "../../components/ThemedSelect.jsx";
 import PasswordStrengthMeter from "../../components/PasswordStrengthMeter.jsx";
+import DashboardLoading from "../../components/DashboardLoading.jsx";
 import { evaluatePasswordStrength, getPasswordValidationMessage } from "../../utils/passwordStrength.js";
 
 export default function UserProfile({ onAvatarPreviewChange, onOpenRestaurant }) {
@@ -536,11 +537,7 @@ export default function UserProfile({ onAvatarPreviewChange, onOpenRestaurant })
   }
 
   if (profileLoading) {
-    return (
-      <div className="userProfile">
-        <p style={{ padding: "20px", color: "#888" }}>Loading profile...</p>
-      </div>
-    );
+    return <DashboardLoading message="Loading profile..." />;
   }
 
   return (

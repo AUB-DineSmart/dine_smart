@@ -5,6 +5,7 @@ import { getProfile, updateProfile, deleteProfileAccount, changePassword } from 
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { useTheme } from "../../auth/ThemeContext.jsx";
 import ThemedSelect from "../../components/ThemedSelect.jsx";
+import DashboardLoading from "../../components/DashboardLoading.jsx";
 import { COUNTRY_OPTIONS, splitPhoneNumber } from "../../constants/countries.js";
 import PasswordStrengthMeter from "../../components/PasswordStrengthMeter.jsx";
 import { evaluatePasswordStrength, getPasswordValidationMessage } from "../../utils/passwordStrength.js";
@@ -284,11 +285,7 @@ export default function AdminProfile({ onAvatarPreviewChange }) {
   }, [showDeleteModal, deletingAccount]);
 
   if (profileLoading) {
-    return (
-      <div className="userProfile">
-        <p style={{ padding: "20px", color: "#888" }}>Loading profile...</p>
-      </div>
-    );
+    return <DashboardLoading message="Loading profile..." />;
   }
 
   return (

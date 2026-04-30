@@ -7,6 +7,7 @@ import {
   approveRestaurantDeletion,
   rejectRestaurantDeletion,
 } from "../../services/adminService";
+import DashboardLoading from "../../components/DashboardLoading.jsx";
 
 function dataUrlToBlobUrl(dataUrl) {
   const raw = String(dataUrl || "").trim();
@@ -94,10 +95,13 @@ export default function PendingRestaurantsPage({ onPendingCountChange }) {
   }, [restaurants.length, onPendingCountChange]);
 
   const emptyMessage = useMemo(() => {
-    if (loading) return "Loading pending restaurants...";
     if (restaurants.length === 0) return "No pending restaurants.";
     return "";
-  }, [loading, restaurants.length]);
+  }, [restaurants.length]);
+
+  if (loading) {
+    return <DashboardLoading message="Loading restaurants..." />;
+  }
 
   async function handleApprove(id) {
     setSuccess("");

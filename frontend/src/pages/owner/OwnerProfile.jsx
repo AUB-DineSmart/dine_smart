@@ -7,6 +7,7 @@ import { createRestaurant, getMyRestaurant, updateMyRestaurant, requestRestauran
 import { useTheme } from "../../auth/ThemeContext.jsx";
 import ThemedSelect from "../../components/ThemedSelect.jsx";
 import PasswordStrengthMeter from "../../components/PasswordStrengthMeter.jsx";
+import DashboardLoading from "../../components/DashboardLoading.jsx";
 import { evaluatePasswordStrength, getPasswordValidationMessage } from "../../utils/passwordStrength.js";
 
 const OwnerLocationMap = lazy(() => import("../../components/OwnerLocationMap.jsx"));
@@ -688,11 +689,7 @@ export default function OwnerProfile({ onLogoPreviewChange, onSaved }) {
   }
 
   if (!initialLoadComplete) {
-    return (
-      <div className="userProfile">
-        <p style={{ padding: "20px", color: "#888" }}>Loading restaurant profile...</p>
-      </div>
-    );
+    return <DashboardLoading message="Loading profile..." />;
   }
 
   const viewOnly = Boolean(existingRestaurant && !isEditing && !isPendingApproval);

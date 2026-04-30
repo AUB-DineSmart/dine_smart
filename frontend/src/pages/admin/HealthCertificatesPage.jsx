@@ -4,6 +4,7 @@ import {
   verifyRestaurant,
   unverifyRestaurant,
 } from "../../services/adminService";
+import DashboardLoading from "../../components/DashboardLoading.jsx";
 
 function dataUrlToBlobUrl(dataUrl) {
   const raw = String(dataUrl || "").trim();
@@ -90,6 +91,10 @@ export default function HealthCertificatesPage() {
   const pending = restaurants.filter((r) => !r.certificate_verified);
   const verified = restaurants.filter((r) => r.certificate_verified);
 
+  if (loading) {
+    return <DashboardLoading message="Loading restaurants..." />;
+  }
+
   return (
     <div className="adminPage">
       <h1 className="ownerProfile__title">Health Certificate Verification</h1>
@@ -100,9 +105,7 @@ export default function HealthCertificatesPage() {
       {success && <div className="inlineToast">{success}</div>}
       {error && <div className="fieldError">{error}</div>}
 
-      {loading ? (
-        <p className="placeholderPage__text">Loading...</p>
-      ) : restaurants.length === 0 ? (
+      {restaurants.length === 0 ? (
         <p className="placeholderPage__text">No restaurants have uploaded a health certificate yet.</p>
       ) : (
         <>

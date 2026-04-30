@@ -17,6 +17,7 @@ import { markEventAttendeeNoShow, markEventAttendeeCompleted } from "../../servi
 import ConfirmDialog from "../../components/ConfirmDialog.jsx";
 import EmptyState from "../../components/EmptyState.jsx";
 import OwnerReservationCalendar from "../../components/OwnerReservationCalendar.jsx";
+import DashboardLoading from "../../components/DashboardLoading.jsx";
 import ThemedSelect from "../../components/ThemedSelect.jsx";
 
 function toDateTimeValue(reservation) {
@@ -1089,12 +1090,7 @@ export default function OwnerReservations() {
   }
 
   if (loading) {
-    return (
-      <div className="placeholderPage">
-        <h1 className="placeholderPage__title">Reservations</h1>
-        <p className="placeholderPage__text">Loading reservations...</p>
-      </div>
-    );
+    return <DashboardLoading message="Loading reservations..." />;
   }
 
   return (

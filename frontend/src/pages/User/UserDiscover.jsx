@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { useAuth } from "../../auth/AuthContext.jsx";
 import { getDiscoverFeed, getPublicEvents } from "../../services/restaurantService";
 import { joinEvent, saveEvent } from "../../services/eventService";
-import LoadingSkeleton from "../../components/LoadingSkeleton.jsx";
+import DashboardLoading from "../../components/DashboardLoading.jsx";
 import EmptyState from "../../components/EmptyState.jsx";
 import ThemedSelect from "../../components/ThemedSelect.jsx";
 import { toDateObject, startOfDay, formatDateRange } from "../../utils/dateUtils";
@@ -699,12 +699,7 @@ export default function UserDiscover({ onOpenRestaurant, onViewBooking }) {
   }, [effectiveLatitude, effectiveLongitude]);
 
   if (loading) {
-    return (
-      <div className="userSearchPage">
-        <h1 className="userSearchPage__title userSearchPage__title--script">Events</h1>
-        <LoadingSkeleton variant="card" count={6} />
-      </div>
-    );
+    return <DashboardLoading message="Loading events..." />;
   }
 
   if (error) {

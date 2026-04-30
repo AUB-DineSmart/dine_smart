@@ -6,6 +6,7 @@ import { getUserEventReservations, cancelUserEventReservation } from "../../serv
 import ConfirmDialog from "../../components/ConfirmDialog.jsx";
 import EmptyState from "../../components/EmptyState.jsx";
 import EditReservationModal from "../../components/EditReservationModal.jsx";
+import DashboardLoading from "../../components/DashboardLoading.jsx";
 import ThemedSelect from "../../components/ThemedSelect.jsx";
 import { formatReservationDate, formatReservationTime, toReservationSortTimestamp, toReservationDateTime } from "../../utils/dateUtils";
 
@@ -297,12 +298,7 @@ export default function UserReservations() {
   }
 
   if (loading) {
-    return (
-      <div className="placeholderPage">
-        <h1 className="placeholderPage__title">Reservations</h1>
-        <p className="placeholderPage__text">Loading reservations...</p>
-      </div>
-    );
+    return <DashboardLoading message="Loading reservations..." />;
   }
 
   return (

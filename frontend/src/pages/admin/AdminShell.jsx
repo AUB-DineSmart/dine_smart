@@ -9,6 +9,7 @@ import FlaggedReviewsPage from "./FlaggedReviewsPage.jsx";
 import AdminProfile from "./AdminProfile.jsx";
 import HealthCertificatesPage from "./HealthCertificatesPage.jsx";
 import ConfirmDialog from "../../components/ConfirmDialog.jsx";
+import DashboardLoading from "../../components/DashboardLoading.jsx";
 import { getProfile } from "../../services/profileService.js";
 
 function tabFromPathname(pathname) {
@@ -85,7 +86,8 @@ export default function AdminShell() {
     [pendingFlagsCount, pendingRestaurantsCount]
   );
 
-  if (loading || !user || user.role !== "admin") return null;
+  if (loading) return <DashboardLoading />;
+  if (!user || user.role !== "admin") return null;
 
   return (
     <div className="adminArea">

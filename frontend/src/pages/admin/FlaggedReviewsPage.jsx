@@ -9,6 +9,7 @@ import {
   moderateFlaggedReview,
 } from "../../services/adminService";
 import ConfirmDialog from "../../components/ConfirmDialog.jsx";
+import DashboardLoading from "../../components/DashboardLoading.jsx";
 
 export default function FlaggedReviewsPage({ onPendingCountChange }) {
   const [flags, setFlags] = useState([]);
@@ -44,6 +45,10 @@ export default function FlaggedReviewsPage({ onPendingCountChange }) {
   useEffect(() => {
     onPendingCountChange?.(pendingCount);
   }, [pendingCount, onPendingCountChange]);
+
+  if (loading) {
+    return <DashboardLoading message="Loading reviews..." />;
+  }
 
   async function handleDismiss(flagId) {
     setMessage("");
@@ -179,9 +184,7 @@ export default function FlaggedReviewsPage({ onPendingCountChange }) {
       {message && <div className="inlineToast">{message}</div>}
       {error && <div className="fieldError">{error}</div>}
 
-      {loading ? (
-        <p className="placeholderPage__text">Loading flagged reviews...</p>
-      ) : flags.length === 0 ? (
+      {flags.length === 0 ? (
         <p className="placeholderPage__text">No flagged reviews.</p>
       ) : (
         <div className="adminCardList">

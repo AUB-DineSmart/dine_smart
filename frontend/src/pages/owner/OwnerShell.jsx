@@ -28,7 +28,15 @@ const OwnerReservations = lazyWithRetry(lazyImports.OwnerReservations, "pages/ow
 const OWNER_SEEN_RESERVATIONS_KEY = "ds-owner-seen-reservation-ids";
 const OWNER_SEEN_REVIEWS_KEY = "ds-owner-seen-review-ids";
 
-const TabLoader = () => <DashboardLoading message="Loading..." />;
+function getTabLoadingMessage(active) {
+  if (active === "profile") return "Loading profile...";
+  if (active === "menu") return "Loading menu...";
+  if (active === "table-config") return "Loading configuration...";
+  if (active === "events") return "Loading events...";
+  if (active === "reviews") return "Loading reviews...";
+  if (active === "reservations") return "Loading reservations...";
+  return "Loading...";
+}
 
 function normalizeReservationId(reservation) {
   return String(reservation?.id ?? "");
@@ -233,7 +241,7 @@ export default function OwnerShell() {
     };
   }, [user?.id, isApproved, active]);
 
-  if (loading) return null;
+  if (loading) return <DashboardLoading />;
   if (!user || user.role !== "owner") return null;
 
   function handleLogout() {
@@ -253,7 +261,7 @@ export default function OwnerShell() {
               license here while the rest of the owner tools stay locked.
             </p>
           </div>
-          <Suspense fallback={<TabLoader />}>
+          <Suspense fallback={<DashboardLoading message="Loading profile..." />}>
             <OwnerProfile onLogoPreviewChange={setRestaurantLogoUrl} onSaved={fetchApprovalStatus} />
           </Suspense>
         </main>
@@ -300,7 +308,7 @@ export default function OwnerShell() {
           </div>
         )}
 
-        <Suspense fallback={<TabLoader />}>
+        <Suspense fallback={<DashboardLoading message={getTabLoadingMessage(active)} />}>
           {openedTabs.profile && (
             <div style={{ display: active === "profile" ? "block" : "none" }}>
               <OwnerProfile onLogoPreviewChange={setRestaurantLogoUrl} onSaved={fetchApprovalStatus} />
