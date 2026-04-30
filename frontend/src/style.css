@@ -3516,6 +3516,12 @@ body {
   justify-content: center;
   padding: 32px;
   text-align: center;
+  transform: translateY(-6vh);
+}
+
+.userArea__main > .userDashboardLoading,
+.ownerArea__main > .userDashboardLoading {
+  min-height: calc(100vh - 120px);
 }
 
 .userDashboardLoading__title {
