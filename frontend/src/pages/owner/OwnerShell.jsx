@@ -28,7 +28,7 @@ const OwnerReservations = lazyWithRetry(lazyImports.OwnerReservations, "pages/ow
 const OWNER_SEEN_RESERVATIONS_KEY = "ds-owner-seen-reservation-ids";
 const OWNER_SEEN_REVIEWS_KEY = "ds-owner-seen-review-ids";
 
-const TabLoader = () => <DashboardLoading />;
+const TabLoader = () => <DashboardLoading message="Loading..." />;
 
 function normalizeReservationId(reservation) {
   return String(reservation?.id ?? "");

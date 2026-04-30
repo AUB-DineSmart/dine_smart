@@ -52,7 +52,7 @@ export default class ErrorBoundary extends Component {
   render() {
     if (this.state.hasError) {
       if (this.state.recovering) {
-        return <DashboardLoading />;
+        return <DashboardLoading message="Loading..." />;
       }
 
       if (this.props.fallback) return this.props.fallback;

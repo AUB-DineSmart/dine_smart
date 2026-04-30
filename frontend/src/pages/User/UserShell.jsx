@@ -24,7 +24,7 @@ const UserDiscover = lazyWithRetry(lazyImports.UserDiscover, "pages/User/UserDis
 const UserExplore = lazyWithRetry(lazyImports.UserExplore, "pages/User/UserExplore");
 
 const USER_SEEN_EVENT_IDS_KEY = "ds-user-seen-event-ids";
-const TabLoader = () => <DashboardLoading />;
+const TabLoader = () => <DashboardLoading message="Loading..." />;
 
 function normalizeEventId(eventItem) {
   return String(eventItem?.id ?? "");

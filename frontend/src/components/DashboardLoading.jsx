@@ -1,10 +1,12 @@
-const DEFAULT_LOADING_TEXT = "Loading your dashboard...";
+const DEFAULT_LOADING_MESSAGE = "Loading your dashboard...";
 
-export default function DashboardLoading({ text = DEFAULT_LOADING_TEXT }) {
+export default function DashboardLoading({ message = DEFAULT_LOADING_MESSAGE, text }) {
+  const loadingText = text || message;
+
   return (
     <div className="placeholderPage userDashboardLoading" aria-live="polite" aria-busy="true">
-      <h1 className="placeholderPage__title userDashboardLoading__title" aria-label={text}>
-        {text.split("").map((character, index) => (
+      <h1 className="placeholderPage__title userDashboardLoading__title" aria-label={loadingText}>
+        {loadingText.split("").map((character, index) => (
           <span
             key={`${character}-${index}`}
             className="userDashboardLoading__letter"
