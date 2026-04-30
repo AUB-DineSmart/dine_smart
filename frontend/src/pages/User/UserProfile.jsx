@@ -353,11 +353,9 @@ export default function UserProfile({ onAvatarPreviewChange, onOpenRestaurant })
       profilePictureUrl: profilePictureDataUrl || profilePictureUrl || "",
       isSubscribed,
       subscriptionPreferences,
+      latitude: savedLocation.latitude ?? null,
+      longitude: savedLocation.longitude ?? null,
     };
-    if (savedLocation.latitude != null && savedLocation.longitude != null) {
-      payload.latitude = savedLocation.latitude;
-      payload.longitude = savedLocation.longitude;
-    }
 
     let passwordChanged = false;
     try {
