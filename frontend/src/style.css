@@ -5232,7 +5232,7 @@ input[type="date"] {
   color: var(--text);
 }
 
-/* Script variant — used only on the Search Restaurants page heading. */
+/* Script variant for primary user page headings. */
 .userSearchPage__title--script {
   font-family: 'Dancing Script', cursive;
   font-size: clamp(38px, 4vw, 58px);
