@@ -14,6 +14,8 @@ const EVENT_DATE_FILTER_OPTIONS = [
   { value: "week", label: "This Week" },
 ];
 
+const SAVED_EVENT_CHANGED_EVENT = "ds:saved-event-changed";
+
 function getEventStartTimestamp(event) {
   const start = buildEventDateTime(
     event?.start_date || event?.event_date || event?.startDate,
@@ -668,6 +670,25 @@ export default function UserDiscover({ onOpenRestaurant, onViewBooking }) {
     };
   }, [user?.id]);
 
+  useEffect(() => {
+    function onSavedEventChanged(event) {
+      const eventId = event.detail?.eventId;
+      if (!eventId) return;
+      const eventKey = String(eventId);
+      const saved = Boolean(event.detail?.saved);
+
+      setSavedEventIds((prev) => {
+        const next = new Set(prev);
+        if (saved) next.add(eventKey);
+        else next.delete(eventKey);
+        return next;
+      });
+    }
+
+    window.addEventListener(SAVED_EVENT_CHANGED_EVENT, onSavedEventChanged);
+    return () => window.removeEventListener(SAVED_EVENT_CHANGED_EVENT, onSavedEventChanged);
+  }, []);
+
   async function handleToggleSavedEvent(event) {
     const eventId = event?.id;
     if (!eventId || saveBusyEventId != null) return;
@@ -684,10 +705,16 @@ export default function UserDiscover({ onOpenRestaurant, onViewBooking }) {
           next.delete(eventKey);
           return next;
         });
+        window.dispatchEvent(new CustomEvent(SAVED_EVENT_CHANGED_EVENT, {
+          detail: { eventId, saved: false },
+        }));
         toast.success("Event unsaved");
       } else {
         await saveEvent(eventId);
         setSavedEventIds((prev) => new Set(prev).add(eventKey));
+        window.dispatchEvent(new CustomEvent(SAVED_EVENT_CHANGED_EVENT, {
+          detail: { eventId, saved: true, event },
+        }));
         toast.success("Event saved");
       }
     } catch (err) {

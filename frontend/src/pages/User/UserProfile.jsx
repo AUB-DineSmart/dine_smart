@@ -18,6 +18,8 @@ import PasswordStrengthMeter from "../../components/PasswordStrengthMeter.jsx";
 import DashboardLoading from "../../components/DashboardLoading.jsx";
 import { evaluatePasswordStrength, getPasswordValidationMessage } from "../../utils/passwordStrength.js";
 
+const SAVED_EVENT_CHANGED_EVENT = "ds:saved-event-changed";
+
 export default function UserProfile({ onAvatarPreviewChange, onOpenRestaurant }) {
   const navigate = useNavigate();
   const { user, refreshUser, logout } = useAuth();
@@ -100,6 +102,35 @@ export default function UserProfile({ onAvatarPreviewChange, onOpenRestaurant })
       .then((data) => setSavedEvents(Array.isArray(data) ? data : []))
       .catch(() => setSavedEvents([]));
   }, [user?.id]);
+
+  useEffect(() => {
+    function onSavedEventChanged(event) {
+      const eventId = event.detail?.eventId;
+      if (!eventId) return;
+      const saved = Boolean(event.detail?.saved);
+
+      if (!saved) {
+        setSavedEvents((prev) => prev.filter((savedEvent) => String(savedEvent.id) !== String(eventId)));
+        return;
+      }
+
+      const nextEvent = event.detail?.event;
+      if (!nextEvent) {
+        getSavedEvents()
+          .then((data) => setSavedEvents(Array.isArray(data) ? data : []))
+          .catch(() => {});
+        return;
+      }
+
+      setSavedEvents((prev) => {
+        if (prev.some((savedEvent) => String(savedEvent.id) === String(eventId))) return prev;
+        return [nextEvent, ...prev];
+      });
+    }
+
+    window.addEventListener(SAVED_EVENT_CHANGED_EVENT, onSavedEventChanged);
+    return () => window.removeEventListener(SAVED_EVENT_CHANGED_EVENT, onSavedEventChanged);
+  }, []);
 
   // Load search history
   useEffect(() => {
@@ -461,6 +492,9 @@ export default function UserProfile({ onAvatarPreviewChange, onOpenRestaurant })
     try {
       await unsaveEvent(eventId);
       setSavedEvents((prev) => prev.filter((event) => String(event.id) !== String(eventId)));
+      window.dispatchEvent(new CustomEvent(SAVED_EVENT_CHANGED_EVENT, {
+        detail: { eventId, saved: false },
+      }));
       toast.success("Event unsaved");
     } catch (err) {
       toast.error(err.message || "Failed to unsave event");
