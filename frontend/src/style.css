@@ -3243,14 +3243,14 @@ body {
   background:
   linear-gradient(
     135deg,
-    rgba(255, 255, 255, 0.10),
-    rgba(255, 255, 255, 0.03)
+    rgba(30, 46, 112, 0.98),
+    rgba(13, 22, 72, 0.98)
   ),
-  rgba(12, 19, 79, 0.22);
+  #0d1648;
   border-radius: 20px;
   padding: 14px;
-  backdrop-filter: blur(20px) saturate(160%);
- -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: none;
+ -webkit-backdrop-filter: none;
   box-shadow: 0 18px 45px rgba(0, 0, 0, 0.28);
 }
 
@@ -3413,16 +3413,16 @@ body {
   background:
   linear-gradient(
     135deg,
-    rgba(255, 255, 255, 0.10),
-    rgba(255, 255, 255, 0.03)
+    rgba(30, 46, 112, 0.98),
+    rgba(13, 22, 72, 0.98)
   ),
-  rgba(12, 19, 79, 0.22);
+  #0d1648;
   border-radius: 22px;
   padding: 18px;
   display: grid;
   gap: 12px;
-  backdrop-filter: blur(20px) saturate(160%);
--webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: none;
+-webkit-backdrop-filter: none;
   box-shadow: 0 18px 45px rgba(0, 0, 0, 0.28);
 }
 
@@ -4555,18 +4555,20 @@ input[type="date"] {
 .menuItemCard {
   border: 1px solid rgba(255, 255, 255, 0.12);
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.03)),
-    rgba(12, 19, 79, 0.22);
+    linear-gradient(135deg, rgba(30, 46, 112, 0.98), rgba(13, 22, 72, 0.98)),
+    #0d1648;
   border-radius: 18px;
   padding: 12px;
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   box-shadow: 0 14px 34px rgba(0, 0, 0, 0.24);
   display: grid;
   grid-template-columns: 120px 1fr;
   gap: 12px;
   align-items: center;
   position: relative;
+  overflow: hidden;
+  isolation: isolate;
   transition: opacity 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
 }
 
@@ -4697,8 +4699,8 @@ input[type="date"] {
   border: 1px solid rgba(255, 255, 255, 0.11);
   border-radius: 16px;
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)),
-    rgba(12, 19, 79, 0.2);
+    linear-gradient(135deg, rgba(19, 31, 84, 0.98), rgba(9, 16, 52, 0.98)),
+    #0b123d;
   transition: opacity 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
 }
 
@@ -5254,12 +5256,12 @@ input[type="date"] {
 margin: 0 auto;
   border: 1px solid rgba(255, 255, 255, 0.12);
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.03)),
-    rgba(12, 19, 79, 0.22);
+    linear-gradient(135deg, rgba(30, 46, 112, 0.98), rgba(13, 22, 72, 0.98)),
+    #0d1648;
   border-radius: 22px;
   padding: 16px;
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   box-shadow: 0 18px 45px rgba(0, 0, 0, 0.28);
 }
 
@@ -5298,15 +5300,15 @@ margin: 0 auto;
 .restaurantCard {
   border: 1px solid rgba(255, 255, 255, 0.12);
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.03)),
-    rgba(12, 19, 79, 0.18);
+    linear-gradient(135deg, rgba(30, 46, 112, 0.98), rgba(13, 22, 72, 0.98)),
+    #0d1648;
   border-radius: 22px;
   padding: 12px;
   text-align: left;
   cursor: pointer;
 
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   box-shadow: 0 18px 45px rgba(0, 0, 0, 0.28);
 
   transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
@@ -5670,13 +5672,13 @@ margin: 0 auto;
 .restaurantReviewsHeader {
   border: 1px solid rgba(255, 255, 255, 0.12);
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.03)),
-    rgba(12, 19, 79, 0.22);
+    linear-gradient(135deg, rgba(19, 31, 84, 0.98), rgba(9, 16, 52, 0.98)),
+    #0b123d;
   border-radius: 22px;
   padding: 16px;
 
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   box-shadow: 0 18px 45px rgba(0, 0, 0, 0.28);
 }
 
@@ -5706,13 +5708,13 @@ margin: 0 auto;
 
   border: 1px solid rgba(255, 255, 255, 0.12);
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.03)),
-    rgba(12, 19, 79, 0.18);
+    linear-gradient(135deg, rgba(30, 46, 112, 0.98), rgba(13, 22, 72, 0.98)),
+    #0d1648;
   border-radius: 22px;
   padding: 14px;
 
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   box-shadow: 0 18px 45px rgba(0, 0, 0, 0.22);
 }
 
@@ -5795,13 +5797,13 @@ margin: 0 auto;
 .reviewCard {
   border: 1px solid rgba(255, 255, 255, 0.12);
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.03)),
-    rgba(12, 19, 79, 0.18);
+    linear-gradient(135deg, rgba(30, 46, 112, 0.98), rgba(13, 22, 72, 0.98)),
+    #0d1648;
   border-radius: 18px;
   padding: 16px;
 
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   box-shadow: 0 18px 45px rgba(0, 0, 0, 0.22);
 }
 
@@ -6917,8 +6919,8 @@ margin: 0 auto;
 .reservationCard {
   border: 1px solid rgba(255, 255, 255, 0.12);
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.03)),
-    rgba(12, 19, 79, 0.18);
+    linear-gradient(135deg, rgba(30, 46, 112, 0.98), rgba(13, 22, 72, 0.98)),
+    #0d1648;
   border-radius: 16px;
   padding: 14px;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
@@ -14998,8 +15000,8 @@ body.dark .slotDraftRemoveBtn:hover,
   border-radius: 22px;
   padding: 16px;
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.03)),
-    rgba(12, 19, 79, 0.18);
+    linear-gradient(135deg, rgba(30, 46, 112, 0.98), rgba(13, 22, 72, 0.98)),
+    #0d1648;
   box-shadow: 0 14px 34px rgba(0, 0, 0, 0.14);
 }
 
