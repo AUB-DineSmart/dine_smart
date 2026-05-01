@@ -16446,6 +16446,26 @@ body.dark .slotDraftRemoveBtn:hover,
 .eventSearchCard {
   position: relative;
   height: 100%;
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    linear-gradient(135deg, rgba(30, 46, 112, 0.98), rgba(13, 22, 72, 0.98)),
+    #0d1648;
+  border-color: rgba(115, 139, 220, 0.26);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.eventSearchCard:hover,
+.eventSearchCard:focus,
+.eventSearchCard:focus-within,
+.eventSearchCard:active {
+  background:
+    linear-gradient(135deg, rgba(30, 46, 112, 0.98), rgba(13, 22, 72, 0.98)),
+    #0d1648;
+  border-color: rgba(115, 139, 220, 0.26);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
 }
 
 .eventSearchCard__cover {
@@ -16615,6 +16635,15 @@ body.dark .slotDraftRemoveBtn:hover,
 
 [data-theme="light"] .eventSearchCard__description {
   color: rgba(80, 45, 15, 0.76);
+}
+
+[data-theme="light"] .eventSearchCard,
+[data-theme="light"] .eventSearchCard:hover,
+[data-theme="light"] .eventSearchCard:focus,
+[data-theme="light"] .eventSearchCard:focus-within,
+[data-theme="light"] .eventSearchCard:active {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.88), rgba(255, 251, 243, 0.70));
+  border-color: rgba(175, 115, 45, 0.18);
 }
 
 [data-theme="light"] .eventSearchCard__tag {
