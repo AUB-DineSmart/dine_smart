@@ -6,7 +6,7 @@ import { getProfile, redeemReward, updateProfile, deleteProfileAccount, changePa
 import { getFavorites } from "../../services/favoriteService.js";
 import { getSearchHistory, clearSearchHistory } from "../../services/recentSearchService.js";
 import { updateReview } from "../../services/reviewService.js";
-import { getSavedEvents } from "../../services/eventService.js";
+import { getSavedEvents, unsaveEvent } from "../../services/eventService.js";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { useTheme } from "../../auth/ThemeContext.jsx";
 import { COUNTRY_OPTIONS, splitPhoneNumber } from "../../constants/countries.js";
@@ -31,6 +31,7 @@ export default function UserProfile({ onAvatarPreviewChange, onOpenRestaurant })
   const [requiredEditRating, setRequiredEditRating] = useState(5);
   const [requiredEditComment, setRequiredEditComment] = useState("");
   const [requiredActionBusyId, setRequiredActionBusyId] = useState(null);
+  const [unsavingEventId, setUnsavingEventId] = useState(null);
   const [searchHistory, setSearchHistory] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
 
@@ -452,6 +453,20 @@ export default function UserProfile({ onAvatarPreviewChange, onOpenRestaurant })
       setIsSubscribed(next.length > 0);
       return next;
     });
+  }
+
+  async function handleUnsaveEvent(eventId) {
+    if (!eventId || unsavingEventId != null) return;
+    setUnsavingEventId(eventId);
+    try {
+      await unsaveEvent(eventId);
+      setSavedEvents((prev) => prev.filter((event) => String(event.id) !== String(eventId)));
+      toast.success("Event unsaved");
+    } catch (err) {
+      toast.error(err.message || "Failed to unsave event");
+    } finally {
+      setUnsavingEventId(null);
+    }
   }
 
   async function handleRedeemReward() {
@@ -930,6 +945,14 @@ export default function UserProfile({ onAvatarPreviewChange, onOpenRestaurant })
                         {formatSavedEventDate(event)}
                         {timeLabel ? ` - ${timeLabel}` : ""}
                       </div>
+                      <button
+                        type="button"
+                        className="profileSavedEventItem__unsaveBtn"
+                        onClick={() => handleUnsaveEvent(event.id)}
+                        disabled={unsavingEventId === event.id}
+                      >
+                        {unsavingEventId === event.id ? "Unsaving..." : "Unsave"}
+                      </button>
                     </div>
                   );
                 })}

@@ -1455,6 +1455,15 @@ html[data-theme="light"] .quickFilterBtn.is-active {
 [data-theme="light"] .profileSavedEventItem__meta {
   color: rgba(80, 45, 15, 0.72);
 }
+[data-theme="light"] .profileSavedEventItem__unsaveBtn {
+  background: rgba(255, 251, 243, 0.78);
+  border-color: rgba(175, 115, 45, 0.22);
+  color: rgba(26, 14, 6, 0.86);
+}
+[data-theme="light"] .profileSavedEventItem__unsaveBtn:hover:not(:disabled) {
+  border-color: rgba(175, 115, 45, 0.42);
+  color: rgba(140, 90, 10, 0.98);
+}
 [data-theme="light"] .profileReviewItem {
   background: rgba(255, 248, 235, 0.80);
   border: 1px solid rgba(175, 115, 45, 0.20);
@@ -6248,6 +6257,28 @@ margin: 0 auto;
 .profileSavedEventItem__meta {
   font-size: 13px;
   opacity: 0.82;
+}
+
+.profileSavedEventItem__unsaveBtn {
+  margin-top: 10px;
+  min-height: 32px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.92);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.profileSavedEventItem__unsaveBtn:hover:not(:disabled) {
+  border-color: rgba(201, 162, 39, 0.42);
+  color: #fff4cc;
+}
+
+.profileSavedEventItem__unsaveBtn:disabled {
+  cursor: wait;
+  opacity: 0.65;
 }
 
 /* Review item style */

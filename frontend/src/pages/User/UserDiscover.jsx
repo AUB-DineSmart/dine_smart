@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "../../auth/AuthContext.jsx";
 import { getDiscoverFeed, getPublicEvents } from "../../services/restaurantService";
-import { joinEvent, saveEvent } from "../../services/eventService";
+import { getSavedEvents, joinEvent, saveEvent, unsaveEvent } from "../../services/eventService";
 import DashboardLoading from "../../components/DashboardLoading.jsx";
 import EmptyState from "../../components/EmptyState.jsx";
 import ThemedSelect from "../../components/ThemedSelect.jsx";
@@ -287,7 +287,7 @@ function EventCard({ event, onViewDetails, onJoinEvent }) {
   );
 }
 
-function EventDetailsModal({ event, referenceTime, onClose, onJoin, onSave, onShare }) {
+function EventDetailsModal({ event, referenceTime, onClose, onJoin, onToggleSave, onShare, isSaved = false, saveBusy = false }) {
   if (!event) return null;
   const startDate = buildEventDateTime(event.start_date || event.event_date || event.startDate, event.start_time);
   const endDate = buildEventEndDateTime(
@@ -368,7 +368,9 @@ function EventDetailsModal({ event, referenceTime, onClose, onJoin, onSave, onSh
 
           <div className="eventModal__actions">
             <button className="btn btn--gold" type="button" onClick={() => onJoin(event)}>Join Event</button>
-            <button className="btn btn--ghost" type="button" onClick={() => onSave?.(event)}>Save</button>
+            <button className="btn btn--ghost" type="button" onClick={() => onToggleSave?.(event)} disabled={saveBusy}>
+              {isSaved ? "Unsave" : "Save"}
+            </button>
             <button className="btn btn--ghost" type="button" onClick={() => onShare?.(event)}>Share</button>
           </div>
         </div>
@@ -554,6 +556,8 @@ export default function UserDiscover({ onOpenRestaurant, onViewBooking }) {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [joinOpen, setJoinOpen] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
+  const [savedEventIds, setSavedEventIds] = useState(() => new Set());
+  const [saveBusyEventId, setSaveBusyEventId] = useState(null);
   const profileLatitude = Number(user?.latitude);
   const profileLongitude = Number(user?.longitude);
   const effectiveLatitude = coords.latitude != null
@@ -642,6 +646,56 @@ export default function UserDiscover({ onOpenRestaurant, onViewBooking }) {
       { timeout: 7000 }
     );
   }, []);
+
+  useEffect(() => {
+    if (!user?.id) {
+      setSavedEventIds(new Set());
+      return;
+    }
+
+    let cancelled = false;
+    getSavedEvents()
+      .then((events) => {
+        if (cancelled) return;
+        setSavedEventIds(new Set((Array.isArray(events) ? events : []).map((event) => String(event.id))));
+      })
+      .catch(() => {
+        if (!cancelled) setSavedEventIds(new Set());
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
+
+  async function handleToggleSavedEvent(event) {
+    const eventId = event?.id;
+    if (!eventId || saveBusyEventId != null) return;
+
+    const eventKey = String(eventId);
+    const isSaved = savedEventIds.has(eventKey);
+    setSaveBusyEventId(eventId);
+
+    try {
+      if (isSaved) {
+        await unsaveEvent(eventId);
+        setSavedEventIds((prev) => {
+          const next = new Set(prev);
+          next.delete(eventKey);
+          return next;
+        });
+        toast.success("Event unsaved");
+      } else {
+        await saveEvent(eventId);
+        setSavedEventIds((prev) => new Set(prev).add(eventKey));
+        toast.success("Event saved");
+      }
+    } catch (err) {
+      toast.error(err.message || (isSaved ? "Failed to unsave event" : "Failed to save event"));
+    } finally {
+      setSaveBusyEventId(null);
+    }
+  }
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -882,14 +936,9 @@ export default function UserDiscover({ onOpenRestaurant, onViewBooking }) {
           referenceTime={eventsNow}
           onClose={() => setDetailsOpen(false)}
           onJoin={(evt) => { setDetailsOpen(false); setActiveEvent(evt); setJoinOpen(true); }}
-          onSave={async (evt) => {
-            try {
-              await saveEvent(evt.id);
-              toast.success("Event saved");
-            } catch (err) {
-              toast.error(err.message || "Failed to save event");
-            }
-          }}
+          onToggleSave={handleToggleSavedEvent}
+          isSaved={savedEventIds.has(String(activeEvent?.id))}
+          saveBusy={saveBusyEventId === activeEvent?.id}
           onShare={(evt) => {
             const url = `${window.location.origin}/events/${evt.id}`;
             const text = `${evt.title || "Event"} at ${evt.restaurant_name || "DineSmart"}`;
