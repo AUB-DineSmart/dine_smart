@@ -1442,6 +1442,19 @@ html[data-theme="light"] .quickFilterBtn.is-active {
 [data-theme="light"] .profileFavoriteItem__meta {
   color: rgba(80, 45, 15, 0.72);
 }
+[data-theme="light"] .profileSavedEventItem {
+  background: rgba(255, 248, 235, 0.80);
+  border: 1px solid rgba(175, 115, 45, 0.20);
+}
+[data-theme="light"] .profileSavedEventItem__title {
+  color: rgba(26, 14, 6, 0.92);
+}
+[data-theme="light"] .profileSavedEventItem__restaurant {
+  color: rgba(150, 105, 18, 0.95);
+}
+[data-theme="light"] .profileSavedEventItem__meta {
+  color: rgba(80, 45, 15, 0.72);
+}
 [data-theme="light"] .profileReviewItem {
   background: rgba(255, 248, 235, 0.80);
   border: 1px solid rgba(175, 115, 45, 0.20);
@@ -6171,7 +6184,7 @@ margin: 0 auto;
   box-shadow: 0 2px 12px rgba(201, 162, 39, 0.4);
 }
 
-/* ===== Profile Extra Cards (Favorites + My Reviews) ===== */
+/* ===== Profile Extra Cards (Favorites + Saved Events + My Reviews) ===== */
 
 .profileExtraCard {
   margin-top: 18px; /* spacing between cards */
@@ -6212,6 +6225,29 @@ margin: 0 auto;
 .profileFavoriteItem__meta {
   font-size: 14px;
   opacity: 0.8;
+}
+
+.profileSavedEventItem {
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.06);
+}
+
+.profileSavedEventItem__title {
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+
+.profileSavedEventItem__restaurant {
+  color: #C9A227;
+  font-size: 14px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.profileSavedEventItem__meta {
+  font-size: 13px;
+  opacity: 0.82;
 }
 
 /* Review item style */

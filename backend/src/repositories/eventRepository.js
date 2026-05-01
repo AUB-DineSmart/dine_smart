@@ -798,6 +798,8 @@ const getSavedEventsByUser = async ({ userId }) => {
         e.image_url,
         e.start_date::text AS start_date,
         e.end_date::text AS end_date,
+        e.start_time::text AS start_time,
+        e.end_time::text AS end_time,
         e.is_active,
         COALESCE(att.going_count, 0) AS going_count,
         se.created_at AS saved_at

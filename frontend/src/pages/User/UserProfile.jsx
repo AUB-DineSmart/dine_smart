@@ -6,6 +6,7 @@ import { getProfile, redeemReward, updateProfile, deleteProfileAccount, changePa
 import { getFavorites } from "../../services/favoriteService.js";
 import { getSearchHistory, clearSearchHistory } from "../../services/recentSearchService.js";
 import { updateReview } from "../../services/reviewService.js";
+import { getSavedEvents } from "../../services/eventService.js";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { useTheme } from "../../auth/ThemeContext.jsx";
 import { COUNTRY_OPTIONS, splitPhoneNumber } from "../../constants/countries.js";
@@ -23,6 +24,7 @@ export default function UserProfile({ onAvatarPreviewChange, onOpenRestaurant })
   const { theme, toggleTheme } = useTheme();
 
   const [favorites, setFavorites] = useState([]);
+  const [savedEvents, setSavedEvents] = useState([]);
   const [myReviews, setMyReviews] = useState([]);
   const [reviewsRequiringChanges, setReviewsRequiringChanges] = useState([]);
   const [editingRequiredReviewId, setEditingRequiredReviewId] = useState(null);
@@ -88,6 +90,14 @@ export default function UserProfile({ onAvatarPreviewChange, onOpenRestaurant })
     getFavorites()
       .then((data) => setFavorites(Array.isArray(data) ? data : []))
       .catch(() => setFavorites([]));
+  }, [user?.id]);
+
+  // Load saved events from server
+  useEffect(() => {
+    if (!user?.id) return;
+    getSavedEvents()
+      .then((data) => setSavedEvents(Array.isArray(data) ? data : []))
+      .catch(() => setSavedEvents([]));
   }, [user?.id]);
 
   // Load search history
@@ -238,6 +248,23 @@ export default function UserProfile({ onAvatarPreviewChange, onOpenRestaurant })
   const activeVoucherExpiryLabel = activeVoucher?.expirationDate
     ? new Date(activeVoucher.expirationDate).toLocaleDateString()
     : "";
+  const formatSavedEventDate = (event) => {
+    const dateValue = event?.start_date ?? event?.event_date ?? event?.startDate;
+    if (!dateValue) return "Date TBA";
+    const date = new Date(dateValue);
+    return Number.isNaN(date.getTime()) ? String(dateValue) : date.toLocaleDateString();
+  };
+  const formatSavedEventTime = (event) => {
+    const timeValue = event?.start_time ?? event?.startTime;
+    if (!timeValue) return "";
+    const [rawHour = "0", rawMinute = "00"] = String(timeValue).split(":");
+    const hour = Number(rawHour);
+    const minute = Number(rawMinute);
+    if (!Number.isFinite(hour) || !Number.isFinite(minute)) return String(timeValue).slice(0, 5);
+    const hour12 = ((hour + 11) % 12) + 1;
+    const suffix = hour >= 12 ? "PM" : "AM";
+    return `${hour12}:${String(minute).padStart(2, "0")} ${suffix}`;
+  };
 
   const avatarSrc = useMemo(() => {
     return profilePictureDataUrl || profilePictureUrl || DEFAULT_AVATAR;
@@ -884,6 +911,31 @@ export default function UserProfile({ onAvatarPreviewChange, onOpenRestaurant })
               </div>
             ) : (
               <div className="profileEmpty">No favorites yet.</div>
+            )}
+          </div>
+
+          <div className="formCard formCard--userProfile profileExtraCard">
+            <div className="formCard__title">Saved Events</div>
+            {savedEvents.length ? (
+              <div className="profileExtraCard__content">
+                {savedEvents.map((event, index) => {
+                  const timeLabel = formatSavedEventTime(event);
+                  return (
+                    <div key={event.id ?? index} className="profileSavedEventItem">
+                      <div className="profileSavedEventItem__title">{event.title || "Untitled Event"}</div>
+                      <div className="profileSavedEventItem__restaurant">
+                        {event.restaurant_name || event.restaurantName || "Restaurant not set"}
+                      </div>
+                      <div className="profileSavedEventItem__meta">
+                        {formatSavedEventDate(event)}
+                        {timeLabel ? ` - ${timeLabel}` : ""}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="profileEmpty">No saved events yet.</div>
             )}
           </div>
 
